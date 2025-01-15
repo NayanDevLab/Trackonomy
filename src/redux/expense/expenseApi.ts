@@ -1,11 +1,11 @@
 import { apiSlice } from '../apiSlice';
+import { ExpenseResponse } from './expenseTypes';
 
 export const expenseApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getExpenses: builder.query<any[], void>({
-            // Specify void as the argument type
+        getExpenses: builder.query<ExpenseResponse, void>({
             query: () => '/expenses',
-            providesTags: ['Expense'], // Tag used for cache invalidation
+            providesTags: ['Expense'],
         }),
         addExpense: builder.mutation({
             query: (expense) => ({

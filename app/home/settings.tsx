@@ -40,10 +40,28 @@ export default function ProfileScreen() {
             onPress: () => router.push('/settings/term-condition'),
         },
         {
+            id: 5,
+            label: 'Expense Accounts',
+            icon: 'card-outline',
+            onPress: () => router.push('/settings/accounts-list'),
+        },
+        {
+            id: 6,
+            label: 'Category',
+            icon: 'list-outline',
+            onPress: () => router.push('/settings/category-list'),
+        },
+        {
             id: 4,
             label: 'Rate us',
             icon: 'star-outline',
             onPress: () => setRateUsModalVisible(true), // Open Rate Us modal
+        },
+        {
+            id: 8,
+            label: 'Log Out',
+            icon: 'star-outline',
+            onPress: () => setLogoutModalVisible(true), // Open Rate Us modal
         },
     ];
 
@@ -61,16 +79,6 @@ export default function ProfileScreen() {
 
     return (
         <View className="flex-1 bg-darkBg">
-            {/* Header */}
-            <View className="bg-teal-400 h-16 flex-row items-center px-4">
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <Text className="text-white font-bold text-lg ml-4">
-                    Profile
-                </Text>
-            </View>
-
             {/* Profile Section */}
             <View className="items-center mt-6">
                 <Image
@@ -91,15 +99,15 @@ export default function ProfileScreen() {
                     <TouchableOpacity
                         key={option.id}
                         onPress={option.onPress}
-                        className="flex-row justify-between items-center bg-gray-800 py-4 px-4 rounded-lg"
+                        className="flex-row justify-between items-center py-4 px-4 rounded-lg border-b-2 border-gray-700"
                     >
-                        <View className="flex-row items-center space-x-3">
+                        <View className="flex-row items-center gap-x-3">
                             <Ionicons
                                 name={option.icon as any}
-                                size={20}
+                                size={25}
                                 color="white"
                             />
-                            <Text className="text-white text-base">
+                            <Text className="text-white text-xl">
                                 {option.label}
                             </Text>
                         </View>
@@ -110,18 +118,6 @@ export default function ProfileScreen() {
                         />
                     </TouchableOpacity>
                 ))}
-
-                {/* Logout Option */}
-                <TouchableOpacity
-                    onPress={() => setLogoutModalVisible(true)}
-                    className="flex-row justify-between items-center bg-gray-800 py-4 px-4 rounded-lg mt-2"
-                >
-                    <View className="flex-row items-center space-x-3">
-                        <Ionicons name="exit-outline" size={20} color="red" />
-                        <Text className="text-red-500 text-base">Logout</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="red" />
-                </TouchableOpacity>
             </View>
 
             {/* Confirmation Modal */}

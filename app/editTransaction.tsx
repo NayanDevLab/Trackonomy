@@ -1,9 +1,9 @@
+import CategorySelectionModal from '@/src/components/common/modals/CategorySelectionModal';
 import DateTimePickerModal from '@/src/components/common/modals/DateTimePickerModal';
 import PrimaryInput from '@/src/components/common/PrimaryInput';
+import { CategoryModelResponse } from '@/src/redux/category/categoryType';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
-import { useSearchParams } from 'expo-router/build/hooks';
 import React, { useState } from 'react';
 import {
     View,
@@ -12,33 +12,31 @@ import {
     TouchableOpacity,
     Modal,
     StyleSheet,
-    Platform,
 } from 'react-native';
 
 export default function EditTransaction() {
     const router = useRouter();
     const [isModalVisible, setModalVisible] = useState(false);
+    const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
     const [amount, setAmount] = useState('$50');
     const [description, setDescription] = useState(
         'Lunch with friends am at subway',
     );
-    const [category, setCategory] = useState('Food');
+    const [category, setCategory] = useState<CategoryModelResponse | null>();
     const [type, setType] = useState('Expense');
     const [date, setDate] = useState(new Date('2024-07-12'));
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-    const [account, setAccount] = useState('Cash');
+
     const [accounts, setAccounts] = useState([
         { name: 'Cash', amount: '$100.00', icon: 'cash-outline' },
         { name: 'SBI Card', amount: '$200.00', icon: 'card-outline' },
     ]);
-    const params = useSearchParams();
 
     const handleSelectType = (selectedType: string) => {
         setType(selectedType);
-        setModalVisible(false); // Close modal after selection
+        setModalVisible(false);
     };
 
-    const openDatePicker = () => setDatePickerVisible(true);
     const closeDatePicker = () => setDatePickerVisible(false);
 
     const handleDateConfirm = (selectedDate: Date) => {
@@ -46,54 +44,10 @@ export default function EditTransaction() {
         closeDatePicker();
     };
 
-    interface DatePickerEvent {
-        type: string;
-        nativeEvent: {
-            timestamp: number;
-        };
-    }
-
-    const handleConfirm = (
-        event: DatePickerEvent,
-        selectedDate?: Date | undefined,
-    ) => {
-        if (Platform.OS === 'android') {
-            setDatePickerVisible(false); // Close picker after date selection
-        }
-        if (selectedDate) {
-            setDate(new Date(selectedDate)); // Update date state
-        }
+    const handleSelectCategory = (category: CategoryModelResponse) => {
+        setCategory(category);
+        setModalVisible(false);
     };
-
-    // const accounts = [
-    //   { id: "1", name: "Cash", icon: "cash-outline" },
-    //   { id: "2", name: "SBI Card", icon: "card-outline" },
-    //   { id: "3", name: "HDFC Card", icon: "card-outline" },
-    // ];
-
-    React.useEffect(() => {
-        const selectedCategory = params.get('selectedCategory');
-        if (selectedCategory) {
-            setCategory(selectedCategory); // Update the category with the selected value
-        }
-    }, [params.get('selectedCategory')]);
-
-    React.useEffect(() => {
-        const newAccount = params.get('newAccount');
-        const newAmount = params.get('newAmount');
-        const newIcon = params.get('newIcon');
-        if (newAccount) {
-            // Add the new account to the list
-            setAccounts((prev) => [
-                ...prev,
-                {
-                    name: newAccount,
-                    amount: `$${newAmount}`,
-                    icon: newIcon || 'cash-outline',
-                },
-            ]);
-        }
-    }, [params]);
 
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
@@ -131,10 +85,10 @@ export default function EditTransaction() {
                         Transaction Category
                     </Text>
                     <TouchableOpacity
-                        onPress={() => router.push(`/SelectCategory`)}
+                        onPress={() => setCategoryModalVisible(true)}
                         className="bg-gray-800 rounded-md px-4 py-3"
                     >
-                        <Text className="text-white">{category}</Text>
+                        <Text className="text-white">{`${category ? category : ''}`}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -150,6 +104,12 @@ export default function EditTransaction() {
                         <Text className="text-white">{type}</Text>
                     </TouchableOpacity>
                 </View>
+
+                <CategorySelectionModal
+                    isVisible={isCategoryModalVisible}
+                    onSelectCategory={handleSelectCategory}
+                    onClose={() => setCategoryModalVisible(false)}
+                />
 
                 <Modal
                     transparent

@@ -114,8 +114,9 @@ export default function RecentTransactions() {
 
             {/* Transaction List */}
             <FlatList
-                data={transactions}
-                keyExtractor={(item) => item.id}
+                // data={transactions}
+                data={expenses?.data?.expenses || []}
+                keyExtractor={(item) => item.id.toString()}
                 ItemSeparatorComponent={() => <View className="h-4" />}
                 renderItem={({ item }) => (
                     <TransactionCard

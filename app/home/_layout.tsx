@@ -1,5 +1,18 @@
+import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
+
+const CustomHeader = ({ title }: { title: string }) => {
+    return (
+        <View className="bg-teal-400 h-16 flex-row items-center px-4">
+            <TouchableOpacity>
+                <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text className="text-white font-bold text-lg ml-4">{title}</Text>
+        </View>
+    );
+};
 
 export default function TabLayout() {
     return (
@@ -10,9 +23,10 @@ export default function TabLayout() {
                 },
                 tabBarActiveTintColor: '#38B2AC', // Active teal color
                 tabBarInactiveTintColor: '#A0AEC0', // Inactive gray color
-                headerShown: false,
+                headerShown: true, // Ensure header is visible on all screens
             }}
         >
+            {/* Home Screen */}
             <Tabs.Screen
                 name="index"
                 options={{
@@ -24,8 +38,11 @@ export default function TabLayout() {
                             color={color}
                         />
                     ),
+                    header: () => <CustomHeader title="Home" />, // Common header for all screens
                 }}
             />
+
+            {/* Add Transaction Screen */}
             <Tabs.Screen
                 name="add-transaction"
                 options={{
@@ -37,8 +54,11 @@ export default function TabLayout() {
                             color={color}
                         />
                     ),
+                    header: () => <CustomHeader title="Add Transaction" />, // Common header for all screens
                 }}
             />
+
+            {/* Dashboard Screen */}
             <Tabs.Screen
                 name="transactionDashboard"
                 options={{
@@ -50,8 +70,13 @@ export default function TabLayout() {
                             color={color}
                         />
                     ),
+                    header: () => (
+                        <CustomHeader title="Transaction Dashboard" />
+                    ), // Common header for all screens
                 }}
             />
+
+            {/* Budget Screen */}
             <Tabs.Screen
                 name="budgetlist"
                 options={{
@@ -63,8 +88,11 @@ export default function TabLayout() {
                             color={color}
                         />
                     ),
+                    header: () => <CustomHeader title="Budget List" />, // Common header for all screens
                 }}
             />
+
+            {/* Settings Screen */}
             <Tabs.Screen
                 name="settings"
                 options={{
@@ -76,6 +104,7 @@ export default function TabLayout() {
                             color={color}
                         />
                     ),
+                    header: () => <CustomHeader title="Settings" />, // Common header for all screens
                 }}
             />
         </Tabs>
