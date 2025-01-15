@@ -12,16 +12,6 @@ export default function AddTransactionScreen() {
 
     return (
         <View className="flex-1 bg-darkBg">
-            {/* Header */}
-            <View className="bg-teal-400 h-16 flex-row items-center px-4">
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <Text className="text-white font-bold text-lg ml-4">
-                    Add Transaction
-                </Text>
-            </View>
-
             {/* Content */}
             <View className="flex-1 justify-center items-center px-6">
                 {/* Illustration */}

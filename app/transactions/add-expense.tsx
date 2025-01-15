@@ -1,85 +1,118 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import PrimaryInput from '@/src/components/common/PrimaryInput';
 import DateTimePickerModal from '@/src/components/common/modals/DateTimePickerModal';
-import CategoryPickerModal, {
-    Category,
-} from '@/src/components/common/modals/CategoryPickerModal';
+import CategorySelectionModal from '@/src/components/common/modals/CategorySelectionModal';
+import AccountSelectionModal from '@/src/components/common/modals/AccountSelectionModal';
+import { CategoryModelResponse } from '@/src/redux/category/categoryType';
+import { AccountModelResponse } from '@/src/redux/account/accountType';
+import { useAppDispatch, useTypedSelector } from '@/src/hooks/useTypedSelector';
+import { setExpense } from '@/src/redux/expense/expenseSlice';
+import { useRouter } from 'expo-router';
+import { useAddExpenseMutation } from '@/src/redux/expense/expenseApi';
 
 export default function AddExpenseScreen() {
+    const dispatch = useAppDispatch();
     const router = useRouter();
-    const [amount, setAmount] = useState('');
-    const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
-    const [category, setCategory] = useState<Category | null>(null);
-    const [date, setDate] = useState(new Date('2024-07-12'));
-    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-    const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+    const { expense } = useTypedSelector((state) => state.expense);
 
-    const openDatePicker = () => setDatePickerVisible(true);
+    const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
+    const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
+    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+
     const closeDatePicker = () => setDatePickerVisible(false);
 
+    const [addExpense, { isLoading, isSuccess, error }] =
+        useAddExpenseMutation();
+
     const handleDateConfirm = (selectedDate: Date) => {
-        setDate(selectedDate);
+        dispatch(setExpense({ ...expense, date: selectedDate.toISOString() }));
         closeDatePicker();
     };
 
-    const handleCategorySelect = (selectedCategory: Category) => {
-        setCategory(selectedCategory);
-        setCategoryModalVisible(false);
-        // Optionally, you can pass data back or perform additional actions
+    const onChangeInputFields = (
+        field: string,
+        value: string | number | Date,
+    ) => {
+        if (field === 'amount') {
+            value = Number(value);
+        }
+        dispatch(setExpense({ ...expense, [field]: value }));
     };
 
-    const accounts = [
-        { id: '1', name: 'Cash', icon: 'cash-outline' },
-        { id: '2', name: 'SBI Card', icon: 'card-outline' },
-        { id: '3', name: 'HDFC Card', icon: 'card-outline' },
-    ];
+    const fetchExpensePayload = () => {
+        return {
+            title: expense.title,
+            description: expense.description,
+            amount: expense.amount,
+            category_id: expense.category.id,
+            date: expense.date,
+        };
+    };
 
-    const handleAddTransaction = () => {
-        if (!amount || !category || !selectedAccount) {
+    const handleAddTransaction = async () => {
+        if (!expense.amount || !expense.category) {
             alert('Please fill all the fields.');
             return;
         }
 
-        // API Call or Further Logic
-        console.log({
-            amount,
-            category,
-            date,
-            account: selectedAccount,
-        });
-        router.back(); // Navigate back after adding
+        try {
+            const payload = fetchExpensePayload();
+            const response = await addExpense(payload).unwrap();
+            console.log('response', response);
+            if (isSuccess) {
+                router.back();
+                Alert.alert('Success', 'Transaction added successfully!');
+            }
+        } catch (error) {
+            if (error) {
+                Alert.alert(
+                    'Error',
+                    'An error occurred while adding the transaction.',
+                );
+            }
+        }
+    };
+
+    const handleSelectCategory = (category: CategoryModelResponse) => {
+        dispatch(setExpense({ ...expense, category: category }));
+        setCategoryModalVisible(false);
+    };
+
+    const handleSelectAccount = (account: AccountModelResponse) => {
+        dispatch(setExpense({ ...expense, account }));
+        setIsAccountModalVisible(false);
     };
 
     return (
         <View className="flex-1 bg-darkBg px-4">
-            <CategoryPickerModal
-                visible={isCategoryModalVisible}
-                onCancel={() => setCategoryModalVisible(false)}
-                onSelect={handleCategorySelect}
-                selectedCategoryId={category?.id}
+            {/* Category Selection Modal */}
+            <CategorySelectionModal
+                isVisible={isCategoryModalVisible}
+                onClose={() => setCategoryModalVisible(false)}
+                onSelectCategory={handleSelectCategory}
             />
-            {/* Content */}
+
             <View className="flex-1 mt-6">
+                {/* Title Input */}
                 <PrimaryInput
-                    onChangeText={setAmount}
+                    onChangeText={(value) =>
+                        onChangeInputFields('title', value)
+                    }
                     placeholder="Enter Title"
-                    value={amount}
+                    value={expense.title}
                     label="Title"
                     placeholderTextColor="#A0AEC0"
                 />
+
+                {/* Amount Input */}
                 <PrimaryInput
-                    onChangeText={setAmount}
+                    onChangeText={(value) =>
+                        onChangeInputFields('amount', value)
+                    }
                     placeholder="Enter Amount"
-                    value={amount}
+                    value={expense.amount.toString()}
                     keyboardType="numeric"
                     label="Transaction amount"
                     placeholderTextColor="#A0AEC0"
@@ -95,104 +128,92 @@ export default function AddExpenseScreen() {
                         className="bg-gray-800 rounded-md px-4 py-3 flex-row items-center justify-between"
                     >
                         <View className="flex-row items-center">
-                            {category && (
+                            {expense.category && (
                                 <Ionicons
-                                    name={category.icon as any}
+                                    name={expense.category.icon as any}
                                     size={24}
-                                    className="text-white mr-2"
+                                    color={'#38B2AC'}
                                 />
                             )}
                             <Text className="text-white">
-                                {category ? category.name : 'Choose a category'}
+                                {expense.category
+                                    ? expense.category.name
+                                    : 'Choose a category'}
                             </Text>
                         </View>
                         <Ionicons
                             name="chevron-down-outline"
                             size={24}
-                            className="text-gray-400"
+                            color={'#38B2AC'}
                         />
                     </TouchableOpacity>
                 </View>
 
+                {/* Transaction Date */}
                 <View className="mb-4">
                     <Text className="text-gray-400 text-sm mb-2">
                         Transaction Date
                     </Text>
                     <TouchableOpacity
-                        onPress={() => setDatePickerVisible(true)} // Open Date Picker
+                        onPress={() => setDatePickerVisible(true)}
                         className="bg-gray-800 rounded-md px-4 py-3"
                     >
                         <Text className="text-white">
-                            {date.toDateString()}
+                            {expense.date
+                                ? new Date(expense.date).toDateString()
+                                : 'Select Date'}
                         </Text>
                     </TouchableOpacity>
                 </View>
                 <DateTimePickerModal
                     isVisible={isDatePickerVisible}
                     mode="date"
-                    value={date}
+                    value={expense.date ? new Date(expense.date) : new Date()}
                     onConfirm={handleDateConfirm}
                     onCancel={closeDatePicker}
                 />
 
+                {/* Description Input */}
                 <PrimaryInput
-                    onChangeText={setAmount}
-                    placeholder="Enter Amount"
-                    value={amount}
-                    keyboardType="numeric"
+                    onChangeText={(value) =>
+                        onChangeInputFields('description', value)
+                    }
+                    placeholder="Enter Description"
+                    value={expense.description}
                     label="Description"
                     multiline
                     placeholderTextColor="#A0AEC0"
                 />
 
-                {/* Transaction Account */}
+                {/* Account Selection */}
                 <View className="mb-4">
-                    <View className="flex-row justify-between mb-2">
-                        <Text className="text-gray-300">
-                            Transaction account
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => alert('Add account action')}
-                        >
-                            <Text className="text-teal-400 font-bold">
-                                Add account
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    <FlatList
-                        horizontal
-                        data={accounts}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                className={`flex-1 items-center justify-center mx-2 p-4 rounded-lg ${
-                                    selectedAccount === item.id
-                                        ? 'bg-teal-400'
-                                        : 'bg-gray-800'
-                                }`}
-                                onPress={() => setSelectedAccount(item.id)}
-                            >
+                    <Text className="text-gray-400 text-sm mb-2">
+                        Transaction Account
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => setIsAccountModalVisible(true)}
+                        className="bg-gray-800 rounded-md px-4 py-3 flex-row items-center justify-between"
+                    >
+                        <View className="flex-row items-center">
+                            {expense.account && (
                                 <Ionicons
-                                    name={item.icon as any}
+                                    name={expense.account.icon as any}
                                     size={24}
-                                    color={
-                                        selectedAccount === item.id
-                                            ? 'white'
-                                            : 'gray'
-                                    }
+                                    color={'#38B2AC'}
                                 />
-                                <Text
-                                    className={`mt-2 font-bold ${
-                                        selectedAccount === item.id
-                                            ? 'text-white'
-                                            : 'text-gray-400'
-                                    }`}
-                                >
-                                    {item.name}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    />
+                            )}
+                            <Text className="text-white">
+                                {expense.account
+                                    ? expense.account.name
+                                    : 'Choose an Account'}
+                            </Text>
+                        </View>
+                        <Ionicons
+                            name="chevron-down-outline"
+                            size={24}
+                            color={'#38B2AC'}
+                        />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -207,6 +228,13 @@ export default function AddExpenseScreen() {
                     </Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Account Selection Modal */}
+            <AccountSelectionModal
+                isVisible={isAccountModalVisible}
+                onClose={() => setIsAccountModalVisible(false)}
+                onSelectAccount={handleSelectAccount}
+            />
         </View>
     );
 }

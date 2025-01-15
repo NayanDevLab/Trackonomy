@@ -93,7 +93,7 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
                 }`}
             >
                 <Ionicons
-                    name={item.icon as any} // Type assertion if necessary
+                    name={item.icon as any}
                     size={28}
                     className={`${isSelected ? 'text-white' : 'text-gray-400'}`}
                 />
@@ -119,9 +119,6 @@ const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
         >
             <View className="flex-1 bg-black bg-opacity-50 justify-center items-center">
                 <View className="w-11/12 bg-gray-800 rounded-lg p-6 max-h-5/6">
-                    {/* Optional Icon */}
-                    {/* You can add an optional icon or header here if needed */}
-
                     {/* Message or Header */}
                     <Text className="text-center text-white text-lg font-bold mb-4">
                         Select a Category
