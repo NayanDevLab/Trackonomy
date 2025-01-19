@@ -21,3 +21,9 @@ export interface RegistrationPayload {
     password: string;
     email: string;
 }
+
+export interface UserProfile {
+    id: number;
+    username: string;
+    email: string;
+}

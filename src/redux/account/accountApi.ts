@@ -4,7 +4,10 @@ import { AccountsResponse } from './accountType';
 export const accountApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getAccounts: builder.query<AccountsResponse, void>({
-            query: () => '/accounts',
+            query: () => ({
+                url: '/accounts',
+                meta: { skipSuccessToast: false },
+            }),
             providesTags: ['Account'],
         }),
         addAccount: builder.mutation({

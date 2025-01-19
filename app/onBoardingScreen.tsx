@@ -1,53 +1,35 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-
+import {
+    GestureHandlerRootView,
+    GestureDetector,
+    Gesture,
+} from 'react-native-gesture-handler'; // Corrected import
 import MyStatusBar from '@/src/components/common/MyStatusBar';
-
-const onboardingData = [
-    {
-        id: 1,
-        title: 'Effortlessly Manage Your Expenses and Income',
-        description:
-            'Gain full control over your finances by categorizing your expenses and tracking your income seamlessly. Stay informed and organized with ease.',
-        image: require('../assets/images/save_money.png'),
-    },
-    {
-        id: 2,
-        title: 'Save Money and Achieve Your Financial Goals',
-        description:
-            'Set savings goals, track your progress, and build financial discipline. Achieve your dreams with smarter money management.',
-        image: require('../assets/images/goal.png'),
-    },
-    {
-        id: 3,
-        title: 'Leverage AI to Manage Your Expenses',
-        description:
-            'Utilize advanced AI insights to analyze spending patterns, provide personalized recommendations, and help you make informed financial decisions.',
-        image: require('../assets/images/money_ai.png'),
-    },
-    {
-        id: 4,
-        title: 'Stay Informed with Real-Time Updates',
-        description:
-            'Monitor your transactions and budgets in real-time. Stay updated on where your money is going, anytime, anywhere.',
-        image: require('../assets/images/reat_time_update.png'),
-    },
-    {
-        id: 5,
-        title: 'Make Smarter Decisions with Analytics',
-        description:
-            'Analyze your spending habits with easy-to-understand graphs and charts. Make data-driven decisions to improve your financial health.',
-        image: require('../assets/images/money_anayltics.png'),
-    },
-];
+import onBoardingConstants from '@/src/constants/screens/onBoarding';
 
 export default function OnboardingScreen() {
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const [currentSlide, setCurrentSlide] = useState<number>(0);
     const router = useRouter();
 
+    // Gesture detection logic using Gesture.Pan
+    const panGesture = Gesture.Pan().onUpdate((event) => {
+        if (event.translationX < -100) {
+            // Right to Left swipe (next slide)
+            if (currentSlide < onBoardingConstants.onBoardingData.length - 1) {
+                setCurrentSlide(currentSlide + 1);
+            }
+        } else if (event.translationX > 100) {
+            // Left to Right swipe (previous slide)
+            if (currentSlide > 0) {
+                setCurrentSlide(currentSlide - 1);
+            }
+        }
+    });
+
     const handleNext = () => {
-        if (currentSlide < onboardingData.length - 1) {
+        if (currentSlide < onBoardingConstants.onBoardingData.length - 1) {
             setCurrentSlide(currentSlide + 1);
         } else {
             router.replace('/auth/registration');
@@ -65,29 +47,36 @@ export default function OnboardingScreen() {
     };
 
     return (
-        <View className="flex-1 bg-darkBg">
+        <GestureHandlerRootView className="flex-1 bg-darkBg">
             <MyStatusBar />
             <View className="absolute top-12 right-6">
                 <TouchableOpacity onPress={handleSkip}>
-                    <Text className="text-teal-400 font-bold">Skip</Text>
+                    <Text className="text-teal-400 font-bold">
+                        {onBoardingConstants.button.skip}
+                    </Text>
                 </TouchableOpacity>
             </View>
-            <View className="flex-1 items-center justify-center">
-                <Image
-                    source={onboardingData[currentSlide].image}
-                    className="h-64 w-64"
-                    resizeMode="contain"
-                />
-            </View>
+            <GestureDetector gesture={panGesture}>
+                <View className="flex-1 items-center justify-center">
+                    <Image
+                        source={require('../assets/images/money_ai.png')}
+                        className="h-64 w-64"
+                        resizeMode="contain"
+                    />
+                </View>
+            </GestureDetector>
             <View className="rounded-t-3xl bg-[#37373E] p-6">
                 <Text className="text-center text-teal-400 text-lg font-bold mb-2">
-                    {onboardingData[currentSlide].title}
+                    {onBoardingConstants.onBoardingData[currentSlide].title}
                 </Text>
                 <Text className="text-center text-gray-400 mb-4">
-                    {onboardingData[currentSlide].description}
+                    {
+                        onBoardingConstants.onBoardingData[currentSlide]
+                            .description
+                    }
                 </Text>
                 <View className="flex-row justify-center mt-2 mb-6">
-                    {onboardingData.map((_, index) => (
+                    {onBoardingConstants.onBoardingData.map((_, index) => (
                         <View
                             key={index}
                             className={`h-2 w-2 mx-1 rounded-full ${
@@ -109,7 +98,7 @@ export default function OnboardingScreen() {
                         }`}
                     >
                         <Text className="text-white font-bold text-lg">
-                            Previous
+                            {onBoardingConstants.button.previous}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -117,13 +106,14 @@ export default function OnboardingScreen() {
                         className="flex-1 items-center justify-center rounded-lg py-3 bg-teal-400"
                     >
                         <Text className="text-white font-bold text-lg">
-                            {currentSlide === onboardingData.length - 1
-                                ? 'Finish'
-                                : 'Next'}
+                            {currentSlide ===
+                            onBoardingConstants.onBoardingData.length - 1
+                                ? onBoardingConstants.button.finish
+                                : onBoardingConstants.button.next}
                         </Text>
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </GestureHandlerRootView>
     );
 }

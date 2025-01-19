@@ -7,16 +7,39 @@ import {
 
 export const expenseApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getExpenses: builder.query<ExpenseResponse, void>({
-            query: () => '/expenses',
+        getExpenses: builder.query<
+            ExpenseResponse,
+            { sort?: string; limit?: number }
+        >({
+            query: ({ sort, limit }) => {
+                let url = '/expenses';
+
+                const queryParams: string[] = [];
+                if (sort) queryParams.push(`sort=${sort}`);
+                if (limit) queryParams.push(`limit=${limit}`);
+
+                if (queryParams.length > 0) {
+                    // Add the query parameters to the URL
+                    url += `?${queryParams.join('&')}`;
+                }
+
+                return {
+                    url,
+                    meta: {
+                        skipSuccessToast: false,
+                    },
+                };
+            },
             providesTags: ['Expense'],
         }),
-        // Get Expense by ID
         getExpenseById: builder.query<ExpenseResponseItem, string>({
-            query: (id) => `/expenses/${id}`,
+            query: (id) => ({
+                url: `/expenses/${id}`,
+                meta: { skipSuccessToast: true },
+            }),
             providesTags: (result, error, id) => [{ type: 'Expense', id }],
         }),
-        // Add Expense
+
         addExpense: builder.mutation({
             query: (expense) => ({
                 url: '/expenses',
@@ -25,7 +48,6 @@ export const expenseApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Expense'],
         }),
-        // Delete Expense
         deleteExpense: builder.mutation({
             query: (id) => ({
                 url: `/expenses/${id}`,

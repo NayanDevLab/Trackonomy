@@ -1,14 +1,18 @@
 import TransactionCard from '@/src/components/screens/Home/TransactionCard';
 import TransactionTypeAmountCard from '@/src/components/screens/Home/TransactionTypeAmountCard';
+import { useTypedSelector } from '@/src/hooks/useTypedSelector';
 import { useGetExpensesQuery } from '@/src/redux/expense/expenseApi';
+import { getGreeting } from '@/src/utils/greetings';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function HomeScreen() {
     const router = useRouter();
-    const { data: expenses, isLoading, isError, error } = useGetExpensesQuery();
+    const { data: expenses } = useGetExpensesQuery({ limit: 4 });
+    const { userProfile } = useTypedSelector((state) => state.auth);
 
     return (
         <View className="flex-1 bg-darkBg px-4 pt-10">
@@ -21,10 +25,10 @@ export default function HomeScreen() {
                     />
                     <View>
                         <Text className="text-white text-lg font-bold">
-                            Hi, Darshan
+                            Hi, {userProfile?.username}
                         </Text>
                         <Text className="text-gray-400 text-sm">
-                            Good morning
+                            {getGreeting()}
                         </Text>
                     </View>
                 </View>
