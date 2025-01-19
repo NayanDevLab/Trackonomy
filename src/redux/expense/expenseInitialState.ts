@@ -1,5 +1,6 @@
 export const expenseInitialState = {
     expense: {
+        id: 0,
         title: '',
         category: {
             id: 0,

@@ -2,12 +2,19 @@ import { AccountModelResponse } from '../account/accountType';
 import { CategoryModelResponse } from '../category/categoryType';
 
 export interface IExpenseState {
+    id: number;
     title: string;
     category: CategoryModelResponse;
     amount: number;
     date: string;
     description: string;
     account: AccountModelResponse;
+}
+
+export interface ExpenseResponseItem {
+    data: IExpenseState;
+    message: string;
+    success: boolean;
 }
 
 export interface ExpenseModelResponse {

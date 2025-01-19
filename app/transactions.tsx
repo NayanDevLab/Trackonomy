@@ -112,7 +112,6 @@ export default function RecentTransactions() {
                 </TouchableOpacity>
             </View>
 
-            {/* Transaction List */}
             <FlatList
                 // data={transactions}
                 data={expenses?.data?.expenses || []}
@@ -122,7 +121,7 @@ export default function RecentTransactions() {
                     <TransactionCard
                         transaction={item}
                         onPress={() => {
-                            router.push('/transactionsDetails');
+                            router.push(`/transactionsDetails/${item.id}`);
                         }}
                     />
                 )}

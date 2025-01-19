@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiSlice } from '../apiSlice';
+import { ILoginResponse, LoginPayload } from './authType';
 
 export const authApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        login: builder.mutation({
-            query: (credentials: { email: string; password: string }) => ({
+        login: builder.mutation<ILoginResponse, LoginPayload>({
+            query: (credentials) => ({
                 url: '/auth/login',
                 method: 'POST',
                 body: credentials,
@@ -12,8 +13,12 @@ export const authApi = apiSlice.injectEndpoints({
             async onQueryStarted(args, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-                    // Store token in AsyncStorage
-                    await AsyncStorage.setItem('authToken', data.token);
+                    if (data?.success) {
+                        await AsyncStorage.setItem(
+                            'authToken',
+                            data.data.token,
+                        );
+                    }
                 } catch (error) {
                     console.error('Login failed:', error);
                 }

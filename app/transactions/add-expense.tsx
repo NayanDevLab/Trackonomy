@@ -48,6 +48,7 @@ export default function AddExpenseScreen() {
             amount: expense.amount,
             category_id: expense.category.id,
             date: expense.date,
+            account_id: expense.account.id,
         };
     };
 
@@ -67,6 +68,7 @@ export default function AddExpenseScreen() {
             }
         } catch (error) {
             if (error) {
+                console.log('error', error);
                 Alert.alert(
                     'Error',
                     'An error occurred while adding the transaction.',

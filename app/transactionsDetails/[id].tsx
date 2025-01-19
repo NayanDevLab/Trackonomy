@@ -1,17 +1,55 @@
 import TransactionDetailItem from '@/src/components/screens/Home/TransactionDetailItem';
+import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Modal,
+    ActivityIndicator,
+} from 'react-native';
 
 export default function TransactionDetail() {
     const router = useRouter();
+    const { id } = useLocalSearchParams<{ id: string }>();
+    console.log('MY ID is a God', id);
     const [isModalVisible, setModalVisible] = useState(false);
+
+    const { data, isLoading, isError } = useGetExpenseByIdQuery(id);
+    console.log('MY DATA', data);
+    const expense = data?.data;
+
+    if (isLoading) {
+        return (
+            <View className="flex-1 justify-center items-center bg-darkBg">
+                <ActivityIndicator size="large" color="#38B2AC" />
+                <Text className="text-white mt-4">
+                    Loading transaction details...
+                </Text>
+            </View>
+        );
+    }
+
+    if (isError) {
+        return (
+            <View className="flex-1 justify-center items-center bg-darkBg">
+                <Text className="text-white">
+                    Error fetching transaction details.
+                </Text>
+            </View>
+        );
+    }
+
+    // Ensure data is available
+    if (!data) return <Text>No data found</Text>;
 
     const handleDelete = () => {
         setModalVisible(false);
-        alert('Transaction deleted successfully!'); // Replace with actual delete logic
+        alert('Transaction deleted successfully!');
     };
+
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
             {/* Header */}
@@ -32,14 +70,14 @@ export default function TransactionDetail() {
             <View className="bg-[#2C2C33] rounded-lg p-4 flex-row items-center justify-between mb-6">
                 <View className="flex-row items-center">
                     <Ionicons
-                        name="fast-food-outline"
+                        name={expense?.category.icon as any}
                         size={32}
                         color={'white'}
                         className="text-white bg-[#36363D] p-3 rounded-lg"
                     />
                     <View className="ml-4">
                         <Text className="text-white text-lg font-bold">
-                            Food
+                            {expense?.title}
                         </Text>
                         <Text className="text-gray-400 text-sm">Expense</Text>
                     </View>
@@ -47,7 +85,9 @@ export default function TransactionDetail() {
                 <View className="flex flex-row gap-x-3">
                     <TouchableOpacity
                         onPress={() => {
-                            router.push('/editTransaction');
+                            if (expense) {
+                                router.push(`/SelectCategory`);
+                            }
                         }}
                     >
                         <Ionicons
@@ -74,20 +114,20 @@ export default function TransactionDetail() {
                 />
                 <TransactionDetailItem
                     title="Transaction Category"
-                    value="Food"
+                    value={expense?.category.name || 'N/A'}
                 />
-                <TransactionDetailItem
-                    title="Transaction Date"
-                    value="12 Jan 2024"
-                />
+                <TransactionDetailItem title="Transaction Date" value={'N/A'} />
                 <TransactionDetailItem
                     title="Transaction Account"
-                    value="Cash"
+                    value={expense?.account.name || 'N/A'}
                 />
-                <TransactionDetailItem title="Amount" value="$50.00" />
+                <TransactionDetailItem
+                    title="Amount"
+                    value={`$${expense?.amount}`}
+                />
                 <TransactionDetailItem
                     title="Description"
-                    value="Lunch at Subway free treat for completing the project milestone with the team. Enjoyed a variety of sandwiches and drinks."
+                    value={expense?.description || 'No description available'}
                 />
             </View>
 
