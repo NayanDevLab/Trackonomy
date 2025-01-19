@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiSlice } from '../apiSlice';
 import { ILoginResponse, LoginPayload } from './authType';
+import { setUserProfile } from './authSlice';
 
 export const authApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -9,6 +10,7 @@ export const authApi = apiSlice.injectEndpoints({
                 url: '/auth/login',
                 method: 'POST',
                 body: credentials,
+                meta: { successMessage: 'You have logged in successfully!' },
             }),
             async onQueryStarted(args, { queryFulfilled, dispatch }) {
                 try {
@@ -29,9 +31,25 @@ export const authApi = apiSlice.injectEndpoints({
                 url: '/auth/register',
                 method: 'POST',
                 body: userData,
+                meta: { successMessage: 'You have registered successfully!' },
             }),
+        }),
+        getUserProfile: builder.query({
+            query: () => ({
+                url: '/user/profile',
+                meta: { skipSuccessToast: true },
+            }),
+            onQueryStarted: async (_, { dispatch, queryFulfilled }) => {
+                try {
+                    const { data } = await queryFulfilled;
+                    dispatch(setUserProfile(data.data));
+                } catch (error) {
+                    console.error('Get user profile failed:', error);
+                }
+            },
         }),
     }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApi;
+export const { useLoginMutation, useRegisterMutation, useGetUserProfileQuery } =
+    authApi;

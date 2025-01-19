@@ -4,12 +4,7 @@ import {
 } from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CategoryModelResponse } from '@/src/redux/category/categoryType';
 import PrimaryInput from '@/src/components/common/PrimaryInput';

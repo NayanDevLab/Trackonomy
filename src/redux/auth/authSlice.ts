@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LoginPayload, RegistrationPayload } from './authType';
+import { LoginPayload, RegistrationPayload, UserProfile } from './authType';
 import { authInitialState } from './authInitialState';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -24,30 +24,31 @@ const initialState = {
     },
     token: '',
     isAuthenticated: false,
+    userProfile: {
+        id: 0,
+        username: '',
+        email: '',
+    },
 };
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        // Set login state
         setLogin(state, action: PayloadAction<LoginPayload>) {
             state.login = action.payload;
             state.loginError = initialState.loginError; // Clear login errors
         },
-        // Set login errors
         setLoginError(
             state,
             action: PayloadAction<Partial<(typeof initialState)['loginError']>>,
         ) {
             state.loginError = { ...state.loginError, ...action.payload };
         },
-        // Set registration state
         setRegistration(state, action: PayloadAction<RegistrationPayload>) {
             state.registration = action.payload;
-            state.registrationError = initialState.registrationError; // Clear registration errors
+            state.registrationError = initialState.registrationError;
         },
-        // Set registration errors
         setRegistrationError(
             state,
             action: PayloadAction<
@@ -70,7 +71,10 @@ const authSlice = createSlice({
         logout: (state) => {
             state.token = '';
             state.isAuthenticated = false;
-            AsyncStorage.removeItem('authToken'); // Clear token from storage
+            AsyncStorage.removeItem('authToken');
+        },
+        setUserProfile(state, action: PayloadAction<UserProfile>) {
+            state.userProfile = action.payload;
         },
     },
 });
@@ -83,6 +87,7 @@ export const {
     resetAuthState,
     setToken,
     logout,
+    setUserProfile,
 } = authSlice.actions;
 
 export default authSlice.reducer;

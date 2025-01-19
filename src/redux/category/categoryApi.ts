@@ -4,7 +4,10 @@ import { CategoriesResponse } from './categoryType';
 export const categoryApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getCategories: builder.query<CategoriesResponse, void>({
-            query: () => '/categories',
+            query: () => ({
+                url: '/categories',
+                meta: { skipSuccessToast: false },
+            }),
             providesTags: ['Category'],
         }),
         addCategory: builder.mutation({

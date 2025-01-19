@@ -2,7 +2,7 @@ import TransactionDetailItem from '@/src/components/screens/Home/TransactionDeta
 import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import {
     Modal,
     ActivityIndicator,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function TransactionDetail() {
     const router = useRouter();
