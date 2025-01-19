@@ -4,12 +4,12 @@ import { AccountsResponse } from './accountType';
 export const accountApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getAccounts: builder.query<AccountsResponse, void>({
-            query: () => '/accounts', // API endpoint for fetching accounts
+            query: () => '/accounts',
             providesTags: ['Account'],
         }),
         addAccount: builder.mutation({
             query: (account) => ({
-                url: '/accounts', // API endpoint for adding a new account
+                url: '/accounts',
                 method: 'POST',
                 body: account,
             }),
@@ -17,14 +17,14 @@ export const accountApi = apiSlice.injectEndpoints({
         }),
         deleteAccount: builder.mutation({
             query: (id) => ({
-                url: `/accounts/${id}`, // API endpoint for deleting an account
+                url: `/accounts/${id}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Account'],
         }),
         updateAccount: builder.mutation({
             query: ({ id, ...account }) => ({
-                url: `/accounts/${id}`, // API endpoint for updating an account
+                url: `/accounts/${id}`,
                 method: 'PUT',
                 body: account,
             }),

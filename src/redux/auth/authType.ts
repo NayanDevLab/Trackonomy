@@ -8,6 +8,14 @@ export interface LoginPayload {
     password: string;
 }
 
+export interface ILoginResponse {
+    success: boolean;
+    message: string;
+    data: {
+        token: string;
+    };
+}
+
 export interface RegistrationPayload {
     username: string;
     password: string;

@@ -44,8 +44,7 @@ export default function LoginScreen() {
             const response = await loginApi(login).unwrap();
             console.log('Login Successful:', response);
 
-            // Store token in AsyncStorage or state
-            await AsyncStorage.setItem('authToken', response.token);
+            await AsyncStorage.setItem('authToken', response.data.token);
 
             router.replace('/home'); // Navigate to home screen
         } catch (error: any) {
