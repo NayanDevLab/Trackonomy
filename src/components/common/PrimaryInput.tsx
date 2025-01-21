@@ -5,7 +5,7 @@ interface InputProps {
     label?: string;
     placeholder: string;
     placeholderTextColor?: string;
-    value: string;
+    value: string | number | null;
     onChangeText: (text: string) => void;
     keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
     secureTextEntry?: boolean;
@@ -45,7 +45,7 @@ const PrimaryInput: React.FC<InputProps> = ({
                 }`}
                 placeholder={placeholder}
                 placeholderTextColor={placeholderTextColor}
-                value={value}
+                value={value !== null ? String(value) : undefined}
                 onChangeText={onChangeText}
                 keyboardType={keyboardType}
                 secureTextEntry={secureTextEntry}

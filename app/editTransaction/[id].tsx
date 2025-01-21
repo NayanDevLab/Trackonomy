@@ -1,63 +1,82 @@
-import {
-    useGetExpenseByIdQuery,
-    useUpdateExpenseByIdMutation,
-} from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { CategoryModelResponse } from '@/src/redux/category/categoryType';
 import PrimaryInput from '@/src/components/common/PrimaryInput';
 import DateTimePickerModal from '@/src/components/common/modals/DateTimePickerModal';
 import CategorySelectionModal from '@/src/components/common/modals/CategorySelectionModal';
+import { useTypedSelector } from '@/src/hooks/useTypedSelector';
+import { IExpenseState } from '@/src/redux/expense/expenseTypes';
+import { expenseInitialState } from '@/src/redux/expense/expenseInitialState';
+import AccountSelectionModal from '@/src/components/common/modals/AccountSelectionModal';
+import { AccountModelResponse } from '@/src/redux/account/accountType';
+import PrimaryButton from '@/src/components/common/PrimaryButton';
+import SelectionIconInput from '@/src/components/common/SelectionIconInput';
+import useModalState from '@/src/hooks/useModalState';
 
 export default function EditTransaction() {
     const router = useRouter();
-    const { id } = useLocalSearchParams<{ id: string }>();
-    const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
-    const [amount, setAmount] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState<CategoryModelResponse | null>(
-        null,
-    );
-    const [date, setDate] = useState(new Date());
-    const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+    const [editableExpense, setEditableExpense] = useState<IExpenseState>({
+        ...expenseInitialState.expenseDetails,
+    });
 
-    // Fetch the existing data
-    const { data, isLoading, isError } = useGetExpenseByIdQuery(id as string);
+    const { closeModal, modalState, openModal } = useModalState();
+    const { expenseDetails } = useTypedSelector((state) => state.expense);
 
-    const [updateExpense] = useUpdateExpenseByIdMutation();
+    const handleUpdate = async () => {};
 
-    const handleUpdate = async () => {
-        const updatedExpense = {
-            amount: parseFloat(amount),
-            description,
-            category: category || {},
-            date: date.toISOString(),
-        };
-
-        try {
-            await updateExpense({
-                id: id as string,
-                expense: updatedExpense,
-            }).unwrap();
-            router.push('/home');
-        } catch (error) {
-            console.error('Error updating expense:', error);
-        }
+    const onChangeInputField = (
+        field: string,
+        value:
+            | number
+            | string
+            | AccountModelResponse
+            | CategoryModelResponse
+            | Date,
+    ) => {
+        setEditableExpense({ ...editableExpense, [field]: value });
     };
 
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#38B2AC" />;
-    }
-
-    if (isError) {
-        return <Text>Error fetching expense details.</Text>;
-    }
+    useEffect(() => {
+        if (expenseDetails.id) {
+            setEditableExpense(expenseDetails);
+        }
+    }, [expenseDetails]);
 
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
-            {/* Header */}
+            <CategorySelectionModal
+                isVisible={modalState.category}
+                onClose={() => closeModal('category')}
+                onSelectCategory={(category) => {
+                    onChangeInputField('category', category);
+                    closeModal('category');
+                }}
+            />
+            <AccountSelectionModal
+                isVisible={modalState.account}
+                onClose={() => closeModal('account')}
+                onSelectAccount={(account) => {
+                    onChangeInputField('account', account);
+                    closeModal('account');
+                }}
+            />
+
+            <DateTimePickerModal
+                isVisible={modalState.date}
+                mode="date"
+                value={
+                    editableExpense.date
+                        ? new Date(editableExpense.date)
+                        : new Date()
+                }
+                onConfirm={(date) => {
+                    onChangeInputField('date', date);
+                    closeModal('date');
+                }}
+                onCancel={() => closeModal('date')}
+            />
             <View className="flex-row items-center mb-6">
                 <TouchableOpacity onPress={() => router.back()}>
                     <Ionicons
@@ -71,74 +90,65 @@ export default function EditTransaction() {
                 </Text>
             </View>
 
-            {/* Form */}
             <View>
                 <PrimaryInput
-                    onChangeText={setAmount}
-                    value={amount}
-                    placeholder="Enter Amount"
-                    label="Transaction Amount"
+                    onChangeText={(value) => onChangeInputField('title', value)}
+                    value={editableExpense.title}
+                    placeholder="Enter Title"
+                    label="Transaction Title"
                 />
                 <PrimaryInput
-                    onChangeText={setDescription}
-                    value={description}
+                    onChangeText={(value) =>
+                        onChangeInputField('amount', value)
+                    }
+                    value={editableExpense.amount}
+                    placeholder="Enter Amount"
+                    label="Transaction Amount"
+                    keyboardType="numeric"
+                />
+                <PrimaryInput
+                    onChangeText={(value) =>
+                        onChangeInputField('description', value)
+                    }
+                    value={editableExpense.description}
                     placeholder="Enter Description"
                     label="Description"
                     multiline
                 />
-                {/* Transaction Category */}
-                <View className="mb-4">
-                    <Text className="text-gray-400 text-sm mb-2">
-                        Transaction Category
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => setCategoryModalVisible(true)}
-                        className="bg-gray-800 rounded-md px-4 py-3"
-                    >
-                        <Text className="text-white">
-                            {category ? category.name : 'Select Category'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
 
-                {/* Transaction Date */}
+                <SelectionIconInput
+                    label="Transaction Category"
+                    selectedItem={editableExpense.category}
+                    onPress={() => openModal('category')}
+                    placeholder="Choose a category"
+                />
+
+                <SelectionIconInput
+                    label="Transaction Account"
+                    selectedItem={editableExpense.account}
+                    onPress={() => {
+                        openModal('account');
+                    }}
+                    placeholder="Choose a account"
+                />
+
                 <View className="mb-4">
                     <Text className="text-gray-400 text-sm mb-2">
                         Transaction Date
                     </Text>
                     <TouchableOpacity
-                        onPress={() => setDatePickerVisible(true)}
+                        onPress={() => openModal('date')}
                         className="bg-gray-800 rounded-md px-4 py-3"
                     >
                         <Text className="text-white">
-                            {date.toDateString()}
+                            {editableExpense.date
+                                ? new Date(editableExpense.date).toDateString()
+                                : 'Select Date'}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-                <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
-                    mode="date"
-                    value={date}
-                    onConfirm={(date) => setDate(date)}
-                    onCancel={() => setDatePickerVisible(false)}
-                />
-
-                {/* Category Modal */}
-                <CategorySelectionModal
-                    isVisible={isCategoryModalVisible}
-                    onSelectCategory={setCategory}
-                    onClose={() => setCategoryModalVisible(false)}
-                />
-
-                <TouchableOpacity
-                    onPress={handleUpdate}
-                    className="bg-teal-500 rounded-md py-4"
-                >
-                    <Text className="text-center text-white font-bold text-lg">
-                        Update
-                    </Text>
-                </TouchableOpacity>
+                <PrimaryButton onPress={handleUpdate} title="Update" />
             </View>
         </View>
     );
