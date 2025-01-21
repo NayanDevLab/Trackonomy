@@ -1,4 +1,5 @@
 import TransactionDetailItem from '@/src/components/screens/Home/TransactionDetailItem';
+import { useTypedSelector } from '@/src/hooks/useTypedSelector';
 import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,8 +20,7 @@ export default function TransactionDetail() {
     const [isModalVisible, setModalVisible] = useState(false);
 
     const { data, isLoading, isError } = useGetExpenseByIdQuery(id);
-    console.log('MY DATA', data);
-    const expense = data?.data;
+    const { expenseDetails } = useTypedSelector((state) => state.expense);
 
     if (isLoading) {
         return (
@@ -71,14 +71,14 @@ export default function TransactionDetail() {
             <View className="bg-[#2C2C33] rounded-lg p-4 flex-row items-center justify-between mb-6">
                 <View className="flex-row items-center">
                     <Ionicons
-                        name={expense?.category.icon as any}
+                        name={expenseDetails?.category.icon as any}
                         size={32}
                         color={'white'}
                         className="text-white bg-[#36363D] p-3 rounded-lg"
                     />
                     <View className="ml-4">
                         <Text className="text-white text-lg font-bold">
-                            {expense?.title}
+                            {expenseDetails?.title}
                         </Text>
                         <Text className="text-gray-400 text-sm">Expense</Text>
                     </View>
@@ -86,8 +86,10 @@ export default function TransactionDetail() {
                 <View className="flex flex-row gap-x-3">
                     <TouchableOpacity
                         onPress={() => {
-                            if (expense) {
-                                router.push(`/SelectCategory`);
+                            if (expenseDetails.id) {
+                                router.push(
+                                    `/editTransaction/${String(expenseDetails?.id)}`,
+                                );
                             }
                         }}
                     >
@@ -115,20 +117,23 @@ export default function TransactionDetail() {
                 />
                 <TransactionDetailItem
                     title="Transaction Category"
-                    value={expense?.category.name || 'N/A'}
+                    value={expenseDetails?.category.name || 'N/A'}
                 />
                 <TransactionDetailItem title="Transaction Date" value={'N/A'} />
                 <TransactionDetailItem
                     title="Transaction Account"
-                    value={expense?.account.name || 'N/A'}
+                    value={expenseDetails?.account.name || 'N/A'}
                 />
                 <TransactionDetailItem
                     title="Amount"
-                    value={`$${expense?.amount}`}
+                    value={`$${expenseDetails?.amount}`}
                 />
                 <TransactionDetailItem
                     title="Description"
-                    value={expense?.description || 'No description available'}
+                    value={
+                        expenseDetails?.description ||
+                        'No description available'
+                    }
                 />
             </View>
 

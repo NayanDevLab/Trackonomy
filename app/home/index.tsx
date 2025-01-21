@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
-import Toast from 'react-native-toast-message';
 
 export default function HomeScreen() {
     const router = useRouter();

@@ -1,4 +1,5 @@
 import { apiSlice } from '../apiSlice';
+import { setExpense, setExpenseDetails } from './expenseSlice';
 import {
     ExpenseResponse,
     ExpenseResponseItem,
@@ -35,9 +36,17 @@ export const expenseApi = apiSlice.injectEndpoints({
         getExpenseById: builder.query<ExpenseResponseItem, string>({
             query: (id) => ({
                 url: `/expenses/${id}`,
-                meta: { skipSuccessToast: true },
+                meta: { skipSuccessToast: true }, // Optional metadata
             }),
             providesTags: (result, error, id) => [{ type: 'Expense', id }],
+            onQueryStarted: async (id, { dispatch, queryFulfilled }) => {
+                try {
+                    const { data } = await queryFulfilled;
+                    dispatch(setExpenseDetails(data.data));
+                } catch (error) {
+                    console.error('Failed to fetch expense details:', error);
+                }
+            },
         }),
 
         addExpense: builder.mutation({
