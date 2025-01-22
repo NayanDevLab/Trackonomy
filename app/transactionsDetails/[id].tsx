@@ -1,8 +1,4 @@
-import TransactionDetailItem from '@/src/components/screens/Home/TransactionDetailItem';
-import { useTypedSelector } from '@/src/hooks/useTypedSelector';
-import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     View,
@@ -11,12 +7,14 @@ import {
     Modal,
     ActivityIndicator,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTypedSelector } from '@/src/hooks/useTypedSelector';
+import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
+import TransactionDetailItem from '@/src/components/screens/Home/TransactionDetailItem';
 
 export default function TransactionDetail() {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
-    console.log('MY ID is a God', id);
     const [isModalVisible, setModalVisible] = useState(false);
 
     const { data, isLoading, isError } = useGetExpenseByIdQuery(id);
@@ -53,37 +51,23 @@ export default function TransactionDetail() {
 
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
-            {/* Header */}
-            <View className="flex-row items-center mb-4">
-                <TouchableOpacity>
-                    <Ionicons
-                        name="arrow-back-outline"
-                        size={28}
-                        className="text-white"
-                    />
-                </TouchableOpacity>
-                <Text className="text-white text-lg font-bold ml-4">
-                    Transaction Detail
-                </Text>
-            </View>
-
-            {/* Card */}
-            <View className="bg-[#2C2C33] rounded-lg p-4 flex-row items-center justify-between mb-6">
-                <View className="flex-row items-center">
+            <View className="flex-row items-center justify-between mb-6">
+                <View className="flex-row items-center gap-x-3">
                     <Ionicons
                         name={expenseDetails?.category.icon as any}
-                        size={32}
-                        color={'white'}
-                        className="text-white bg-[#36363D] p-3 rounded-lg"
+                        size={28}
+                        color={'#38B2AC'}
+                        className="bg-[#36363D] p-3 rounded-md"
                     />
-                    <View className="ml-4">
-                        <Text className="text-white text-lg font-bold">
-                            {expenseDetails?.title}
+                    <View className="ml-2 gap-x-2">
+                        <Text className="text-white text-lg font-semibold">
+                            {expenseDetails?.category.name}
                         </Text>
                         <Text className="text-gray-400 text-sm">Expense</Text>
                     </View>
                 </View>
-                <View className="flex flex-row gap-x-3">
+                {/* Edit and Trash Buttons */}
+                <View className="flex-row gap-x-3">
                     <TouchableOpacity
                         onPress={() => {
                             if (expenseDetails.id) {
@@ -92,6 +76,7 @@ export default function TransactionDetail() {
                                 );
                             }
                         }}
+                        className="p-3 bg-[#2C2C33] rounded-full"
                     >
                         <Ionicons
                             name="create-outline"
@@ -99,7 +84,10 @@ export default function TransactionDetail() {
                             color={'white'}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setModalVisible(true)}>
+                    <TouchableOpacity
+                        onPress={() => setModalVisible(true)}
+                        className="p-3 bg-[#2C2C33] rounded-full"
+                    >
                         <Ionicons
                             name="trash-outline"
                             size={24}
@@ -109,20 +97,21 @@ export default function TransactionDetail() {
                 </View>
             </View>
 
-            {/* Details */}
+            {/* Transaction Details */}
             <View className="flex flex-col gap-y-4">
+                <TransactionDetailItem
+                    title="Title"
+                    value={expenseDetails.title}
+                />
                 <TransactionDetailItem
                     title="Transaction Type"
                     value="Expense"
-                />
-                <TransactionDetailItem
-                    title="Transaction Category"
-                    value={expenseDetails?.category.name || 'N/A'}
                 />
                 <TransactionDetailItem title="Transaction Date" value={'N/A'} />
                 <TransactionDetailItem
                     title="Transaction Account"
                     value={expenseDetails?.account.name || 'N/A'}
+                    icon={expenseDetails.account.icon}
                 />
                 <TransactionDetailItem
                     title="Amount"
@@ -137,6 +126,7 @@ export default function TransactionDetail() {
                 />
             </View>
 
+            {/* Modal for Deleting */}
             <Modal
                 transparent
                 visible={isModalVisible}

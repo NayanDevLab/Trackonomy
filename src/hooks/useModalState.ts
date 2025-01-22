@@ -1,41 +1,30 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
-// Define the shape of the modal state.
-// Each modal name will map to a boolean value indicating whether it's open or closed.
-interface ModalState {
-    [key: string]: boolean;
-}
+/**
+ * useModal is a simple custom hook for managing a modal’s open/closed state.
+ * @param initialState - Whether the modal should be initially open or closed.
+ */
+export function useModal(initialState: boolean = false) {
+    const [isOpen, setIsOpen] = useState(initialState);
 
-const useModalState = () => {
-    const [modalState, setModalState] = useState<ModalState>({});
+    // We use useCallback here to ensure the same function reference
+    // is returned between renders, improving performance in certain cases.
+    const open = useCallback(() => {
+        setIsOpen(true);
+    }, []);
 
-    // Open a specific modal
-    const openModal = (modalName: string) => {
-        setModalState((prevState) => ({
-            ...prevState,
-            [modalName]: true,
-        }));
-    };
+    const close = useCallback(() => {
+        setIsOpen(false);
+    }, []);
 
-    // Close a specific modal
-    const closeModal = (modalName: string) => {
-        setModalState((prevState) => ({
-            ...prevState,
-            [modalName]: false,
-        }));
-    };
-
-    // Ensure all modals are closed when the component mounts
-    const resetModals = () => {
-        setModalState({});
-    };
+    const toggle = useCallback(() => {
+        setIsOpen((prev) => !prev);
+    }, []);
 
     return {
-        modalState,
-        openModal,
-        closeModal,
-        resetModals, // For resetting all modals if needed
+        isOpen,
+        open,
+        close,
+        toggle,
     };
-};
-
-export default useModalState;
+}

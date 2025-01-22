@@ -23,7 +23,7 @@ const SelectionIconInput = <T extends { icon?: string; name: string }>({
             <Text className="text-gray-400 text-sm mb-2">{label}</Text>
             <TouchableOpacity
                 onPress={onPress}
-                className="bg-gray-800 rounded-md px-4 py-3 flex-row items-center justify-between"
+                className="bg-gray-700 rounded-md px-4 py-3 flex-row items-center justify-between"
             >
                 <View className="flex-row items-center gap-x-2">
                     {selectedItem && selectedItem.icon && (
@@ -34,7 +34,7 @@ const SelectionIconInput = <T extends { icon?: string; name: string }>({
                         />
                     )}
                     <Text className="text-white">
-                        {selectedItem ? selectedItem.name : placeholder}
+                        {selectedItem?.name ? selectedItem.name : placeholder}
                     </Text>
                 </View>
                 <Ionicons
