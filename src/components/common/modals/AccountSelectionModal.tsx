@@ -31,7 +31,7 @@ const AccountSelectionModal: React.FC<AccountListModalProps> = ({
             onRequestClose={onClose}
         >
             <View style={styles.modalOverlay}>
-                <View className="bg-gray-900 rounded-t-lg w-full p-4 max-h-[60%]">
+                <View className="bg-gray-900 rounded-t-lg w-full p-4 max-h-[60%] pt-10">
                     <Text className="text-white text-xl font-semibold text-center mb-4">
                         Select Account
                     </Text>

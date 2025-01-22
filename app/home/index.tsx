@@ -85,7 +85,10 @@ export default function HomeScreen() {
             </View>
 
             {/* Floating Action Button */}
-            <TouchableOpacity className="absolute bottom-6 right-6 bg-teal-400 w-14 h-14 rounded-full items-center justify-center">
+            <TouchableOpacity
+                className="absolute bottom-6 right-6 bg-teal-400 w-14 h-14 rounded-full items-center justify-center"
+                onPress={() => router.push('/home/add-transaction')}
+            >
                 <Ionicons name="add" size={28} color="#FFFFFF" />
             </TouchableOpacity>
         </View>

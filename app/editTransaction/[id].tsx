@@ -13,7 +13,7 @@ import AccountSelectionModal from '@/src/components/common/modals/AccountSelecti
 import { AccountModelResponse } from '@/src/redux/account/accountType';
 import PrimaryButton from '@/src/components/common/PrimaryButton';
 import SelectionIconInput from '@/src/components/common/SelectionIconInput';
-import useModalState from '@/src/hooks/useModalState';
+import { useModal } from '@/src/hooks/useModalState';
 
 export default function EditTransaction() {
     const router = useRouter();
@@ -21,7 +21,9 @@ export default function EditTransaction() {
         ...expenseInitialState.expenseDetails,
     });
 
-    const { closeModal, modalState, openModal } = useModalState();
+    const categoryModal = useModal();
+    const accountModal = useModal();
+    const datePickerModal = useModal();
     const { expenseDetails } = useTypedSelector((state) => state.expense);
 
     const handleUpdate = async () => {};
@@ -47,24 +49,24 @@ export default function EditTransaction() {
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
             <CategorySelectionModal
-                isVisible={modalState.category}
-                onClose={() => closeModal('category')}
+                isVisible={categoryModal.isOpen}
+                onClose={() => categoryModal.close()}
                 onSelectCategory={(category) => {
                     onChangeInputField('category', category);
-                    closeModal('category');
+                    categoryModal.close();
                 }}
             />
             <AccountSelectionModal
-                isVisible={modalState.account}
-                onClose={() => closeModal('account')}
+                isVisible={accountModal.isOpen}
+                onClose={() => accountModal.close()}
                 onSelectAccount={(account) => {
                     onChangeInputField('account', account);
-                    closeModal('account');
+                    accountModal.close();
                 }}
             />
 
             <DateTimePickerModal
-                isVisible={modalState.date}
+                isVisible={datePickerModal.isOpen}
                 mode="date"
                 value={
                     editableExpense.date
@@ -73,22 +75,10 @@ export default function EditTransaction() {
                 }
                 onConfirm={(date) => {
                     onChangeInputField('date', date);
-                    closeModal('date');
+                    datePickerModal.close();
                 }}
-                onCancel={() => closeModal('date')}
+                onCancel={() => datePickerModal.close()}
             />
-            <View className="flex-row items-center mb-6">
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons
-                        name="arrow-back-outline"
-                        size={28}
-                        className="text-white"
-                    />
-                </TouchableOpacity>
-                <Text className="text-white text-lg font-bold ml-4">
-                    Edit Transaction
-                </Text>
-            </View>
 
             <View>
                 <PrimaryInput
@@ -119,7 +109,7 @@ export default function EditTransaction() {
                 <SelectionIconInput
                     label="Transaction Category"
                     selectedItem={editableExpense.category}
-                    onPress={() => openModal('category')}
+                    onPress={() => categoryModal.open()}
                     placeholder="Choose a category"
                 />
 
@@ -127,7 +117,7 @@ export default function EditTransaction() {
                     label="Transaction Account"
                     selectedItem={editableExpense.account}
                     onPress={() => {
-                        openModal('account');
+                        accountModal.open();
                     }}
                     placeholder="Choose a account"
                 />
@@ -137,7 +127,7 @@ export default function EditTransaction() {
                         Transaction Date
                     </Text>
                     <TouchableOpacity
-                        onPress={() => openModal('date')}
+                        onPress={() => datePickerModal.open()}
                         className="bg-gray-800 rounded-md px-4 py-3"
                     >
                         <Text className="text-white">
