@@ -2,6 +2,7 @@ export const expenseInitialState = {
     expense: {
         id: 0,
         title: '',
+        transaction_type: '',
         category: {
             id: 0,
             name: '',
@@ -22,6 +23,7 @@ export const expenseInitialState = {
     expenseDetails: {
         id: 0,
         title: '',
+        transaction_type: '',
         category: {
             id: 0,
             name: '',

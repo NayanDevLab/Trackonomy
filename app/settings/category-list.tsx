@@ -2,28 +2,17 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useGetCategoriesQuery } from '@/src/redux/category/categoryApi';
 
 interface Category {
-    id: string;
+    id: number;
     name: string;
     icon: string;
 }
 
-const categories: Category[] = [
-    { id: '1', name: 'Food', icon: 'fast-food-outline' },
-    { id: '2', name: 'Entertainment', icon: 'tv-outline' },
-    { id: '3', name: 'Salary', icon: 'wallet-outline' },
-    { id: '4', name: 'Transport', icon: 'car-outline' },
-    { id: '5', name: 'Shopping', icon: 'cart-outline' },
-    { id: '6', name: 'Health', icon: 'heart-outline' },
-    { id: '7', name: 'Travel', icon: 'airplane-outline' },
-    { id: '8', name: 'Utilities', icon: 'flash-outline' },
-    { id: '9', name: 'Education', icon: 'school-outline' },
-    { id: '10', name: 'Gifts', icon: 'gift-outline' },
-];
-
 const CategoryListScreen = () => {
     const router = useRouter();
+    const { data, isLoading, error } = useGetCategoriesQuery();
 
     const handleAddCategory = () => {
         router.push('/add-category'); // Navigate to Add Category screen
@@ -47,8 +36,8 @@ const CategoryListScreen = () => {
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
             <FlatList
-                data={categories}
-                keyExtractor={(item) => item.id}
+                data={data?.data || []}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 className="flex-1"
             />

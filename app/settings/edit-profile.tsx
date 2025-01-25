@@ -31,20 +31,6 @@ export default function EditProfileScreen() {
 
     return (
         <View className="flex-1 bg-[#212129] px-4 pt-6">
-            {/* Header */}
-            <View className="flex-row items-center mb-6">
-                <TouchableOpacity onPress={() => console.log('Go Back')}>
-                    <Ionicons
-                        name="arrow-back-outline"
-                        size={28}
-                        color="white"
-                    />
-                </TouchableOpacity>
-                <Text className="text-white font-bold text-xl ml-4">
-                    Edit Profile
-                </Text>
-            </View>
-
             {/* Profile Picture */}
             <View className="items-center mb-8">
                 <View className="relative">

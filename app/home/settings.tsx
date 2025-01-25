@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmationModal from '@/src/components/common/modals/ConfirmationModal';
 import { useRouter } from 'expo-router';
-import { useAppDispatch } from '@/src/hooks/useTypedSelector';
+import { useAppDispatch, useTypedSelector } from '@/src/hooks/useTypedSelector';
 import { logout } from '@/src/redux/auth/authSlice';
 
 export default function ProfileScreen() {
@@ -19,6 +19,8 @@ export default function ProfileScreen() {
     const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
     const [isRateUsModalVisible, setRateUsModalVisible] = useState(false);
     const [rating, setRating] = useState(0);
+
+    const { userProfile } = useTypedSelector((state) => state.auth);
 
     const menuOptions = [
         {
@@ -55,13 +57,13 @@ export default function ProfileScreen() {
             id: 4,
             label: 'Rate us',
             icon: 'star-outline',
-            onPress: () => setRateUsModalVisible(true), // Open Rate Us modal
+            onPress: () => setRateUsModalVisible(true),
         },
         {
             id: 8,
             label: 'Log Out',
             icon: 'star-outline',
-            onPress: () => setLogoutModalVisible(true), // Open Rate Us modal
+            onPress: () => setLogoutModalVisible(true),
         },
     ];
 
@@ -86,10 +88,10 @@ export default function ProfileScreen() {
                     className="h-24 w-24 rounded-full"
                 />
                 <Text className="text-white font-bold text-xl mt-4">
-                    Darshan Shah
+                    {userProfile?.username}
                 </Text>
                 <Text className="text-gray-400 text-sm">
-                    darshanshah@mail.com
+                    {userProfile?.email}
                 </Text>
             </View>
 
