@@ -105,7 +105,11 @@ export default function TransactionDetail() {
                 />
                 <TransactionDetailItem
                     title="Transaction Type"
-                    value="Expense"
+                    value={
+                        expenseDetails.transaction_type === 'income'
+                            ? 'Income'
+                            : 'Expense'
+                    }
                 />
                 <TransactionDetailItem title="Transaction Date" value={'N/A'} />
                 <TransactionDetailItem

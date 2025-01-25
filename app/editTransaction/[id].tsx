@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CategoryModelResponse } from '@/src/redux/category/categoryType';
 import PrimaryInput from '@/src/components/common/PrimaryInput';
@@ -14,6 +14,8 @@ import { AccountModelResponse } from '@/src/redux/account/accountType';
 import PrimaryButton from '@/src/components/common/PrimaryButton';
 import SelectionIconInput from '@/src/components/common/SelectionIconInput';
 import { useModal } from '@/src/hooks/useModalState';
+import TransactionTypeSelectionModal from '@/src/components/common/modals/TransactionTypeSelectionModal';
+import { useUpdateExpenseByIdMutation } from '@/src/redux/expense/expenseApi';
 
 export default function EditTransaction() {
     const router = useRouter();
@@ -24,9 +26,54 @@ export default function EditTransaction() {
     const categoryModal = useModal();
     const accountModal = useModal();
     const datePickerModal = useModal();
+    const transactionTypeSelectionModal = useModal();
     const { expenseDetails } = useTypedSelector((state) => state.expense);
 
-    const handleUpdate = async () => {};
+    const [updateExpense, { isLoading, isSuccess, error }] =
+        useUpdateExpenseByIdMutation();
+
+    const fetchExpensePayload = () => {
+        return {
+            title: editableExpense.title,
+            description: editableExpense.description,
+            amount: editableExpense.amount,
+            category_id: editableExpense.category.id,
+            date: editableExpense.date,
+            account_id: editableExpense.account.id,
+            transaction_type: editableExpense.transaction_type,
+        };
+    };
+
+    const handleUpdate = async () => {
+        if (!editableExpense.amount || !editableExpense.category) {
+            alert('Please fill all the fields.');
+            return;
+        }
+
+        try {
+            const payload = fetchExpensePayload();
+            console.log('payload', payload);
+            // Pass both expense ID and the payload
+            const response = await updateExpense({
+                id: editableExpense.id,
+                expense: payload,
+            }).unwrap();
+
+            console.log('Update successful', response);
+
+            if (isSuccess) {
+                // Navigate back or show success message
+                router.back();
+                Alert.alert('Success', 'Transaction updated successfully!');
+            }
+        } catch (error) {
+            console.error('Error during update:', error);
+            Alert.alert(
+                'Error',
+                'An error occurred while updating the transaction.',
+            );
+        }
+    };
 
     const onChangeInputField = (
         field: string,
@@ -62,6 +109,15 @@ export default function EditTransaction() {
                 onSelectAccount={(account) => {
                     onChangeInputField('account', account);
                     accountModal.close();
+                }}
+            />
+
+            <TransactionTypeSelectionModal
+                isVisible={transactionTypeSelectionModal.isOpen}
+                onClose={() => transactionTypeSelectionModal.close()}
+                onSelectType={(transactionType) => {
+                    onChangeInputField('transaction_type', transactionType);
+                    transactionTypeSelectionModal.close();
                 }}
             />
 
@@ -124,6 +180,42 @@ export default function EditTransaction() {
 
                 <View className="mb-4">
                     <Text className="text-gray-400 text-sm mb-2">
+                        Transaction Type
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => transactionTypeSelectionModal.open()}
+                        className="bg-gray-800 rounded-md px-4 py-3 flex-row items-center"
+                    >
+                        {editableExpense.transaction_type === 'Income' ? (
+                            <Ionicons
+                                name="arrow-up-circle-outline"
+                                size={24}
+                                color="#38B2AC"
+                            />
+                        ) : editableExpense.transaction_type === 'Expense' ? (
+                            <Ionicons
+                                name="arrow-down-circle-outline"
+                                size={24}
+                                color="#E53E3E"
+                            />
+                        ) : (
+                            <Ionicons
+                                name="cash-outline"
+                                size={24}
+                                color="#A0AEC0"
+                            />
+                        )}
+
+                        <Text className="text-white ml-3">
+                            {editableExpense.transaction_type
+                                ? editableExpense.transaction_type
+                                : 'Select Type of Transaction'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View className="mb-4">
+                    <Text className="text-gray-400 text-sm mb-2">
                         Transaction Date
                     </Text>
                     <TouchableOpacity
@@ -138,7 +230,11 @@ export default function EditTransaction() {
                     </TouchableOpacity>
                 </View>
 
-                <PrimaryButton onPress={handleUpdate} title="Update" />
+                <PrimaryButton
+                    onPress={handleUpdate}
+                    title={isLoading ? 'Updating...' : 'Update'}
+                    disabled={isLoading}
+                />
             </View>
         </View>
     );

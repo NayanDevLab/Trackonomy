@@ -4,6 +4,7 @@ import { CategoryModelResponse } from '../category/categoryType';
 export interface IExpenseState {
     id: number;
     title: string;
+    transaction_type: string;
     category: CategoryModelResponse;
     amount: number;
     date: string;
@@ -21,6 +22,7 @@ export interface ExpenseModelResponse {
     id: number;
     title: string;
     description?: string;
+    transaction_type: string;
     amount: number;
     date: string;
     category: CategoryModelResponse;

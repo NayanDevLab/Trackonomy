@@ -9,6 +9,7 @@ interface SelectionIconInputProps<T> {
     placeholder: string;
     iconColor?: string; // Icon color can be customizable
     onPress: () => void;
+    showName?: boolean; // Whether to display the name along with the icon
 }
 
 const SelectionIconInput = <T extends { icon?: string; name: string }>({
@@ -17,6 +18,7 @@ const SelectionIconInput = <T extends { icon?: string; name: string }>({
     onPress,
     placeholder,
     iconColor = '#38B2AC', // Default icon color
+    showName = true, // Default to showing name
 }: SelectionIconInputProps<T>) => {
     return (
         <View className="mb-4">
@@ -33,9 +35,13 @@ const SelectionIconInput = <T extends { icon?: string; name: string }>({
                             color={iconColor}
                         />
                     )}
-                    <Text className="text-white">
-                        {selectedItem?.name ? selectedItem.name : placeholder}
-                    </Text>
+                    {showName && (
+                        <Text className="text-white">
+                            {selectedItem?.name
+                                ? selectedItem.name
+                                : placeholder}
+                        </Text>
+                    )}
                 </View>
                 <Ionicons
                     name="chevron-down-outline"

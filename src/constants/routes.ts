@@ -36,7 +36,7 @@ export const ROUTES = {
         },
         {
             name: 'transactions',
-            options: { title: 'Transactions' },
+            options: { title: 'Transactions', headerShown: true },
         },
         {
             name: 'nointernetscreen',
@@ -57,6 +57,26 @@ export const ROUTES = {
         {
             name: 'transactions/add-expense',
             options: { title: 'Transactions Details', headerShown: true },
+        },
+        {
+            name: 'settings/category-list',
+            options: { title: 'Categories', headerShown: true },
+        },
+        {
+            name: 'settings/accounts-list',
+            options: { title: 'Accounts', headerShown: true },
+        },
+        {
+            name: 'settings/edit-profile',
+            options: { title: 'Edit Profile', headerShown: true },
+        },
+        {
+            name: 'settings/privacy-policy',
+            options: { title: 'Privacy Policy', headerShown: true },
+        },
+        {
+            name: 'settings/term-condition',
+            options: { title: 'Term & Condition', headerShown: true },
         },
     ] as RouteObject[],
 };

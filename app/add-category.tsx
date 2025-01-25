@@ -1,66 +1,75 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    Modal,
-    FlatList,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-
-const icons = [
-    { id: '1', name: 'fast-food-outline' },
-    { id: '2', name: 'tv-outline' },
-    { id: '3', name: 'wallet-outline' },
-    // Add more icons here
-];
+import IconPickerModal from '@/src/components/common/modals/IconPickerModal';
+import { useAppDispatch, useTypedSelector } from '@/src/hooks/useTypedSelector';
+import { setCategory } from '@/src/redux/category/categorySlice';
+import { useModal } from '@/src/hooks/useModalState';
+import SelectionIconInput from '@/src/components/common/SelectionIconInput';
+import PrimaryInput from '@/src/components/common/PrimaryInput';
+import { useAddCategoryMutation } from '@/src/redux/category/categoryApi';
 
 const AddCategoryScreen = () => {
-    const [category, setCategory] = useState({
-        name: '',
-        icon: '',
-    });
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [selectedIcon, setSelectedIcon] = useState('');
+    const { category } = useTypedSelector((state) => state.category);
+    const dispatch = useAppDispatch();
     const router = useRouter();
+    const iconModal = useModal();
 
-    const handleIconSelect = (icon: string) => {
-        setSelectedIcon(icon);
-        setModalVisible(false);
+    const [addCategory, { isLoading, isError, error }] =
+        useAddCategoryMutation();
+
+    const handleSaveCategory = async () => {
+        if (!category.name || !category.icon) {
+            alert('Please fill in all fields');
+            return;
+        }
+        try {
+            // Call the API to add the category
+            const response = await addCategory(category).unwrap();
+            console.log('Category saved:', response);
+
+            // Redirect or perform any other actions
+            router.push('/settings/category-list');
+        } catch (error) {
+            // Handle error if any
+            console.error('Error saving category:', error);
+            alert('Failed to save the category. Please try again later.');
+        }
     };
 
-    const handleSaveCategory = () => {
-        // Logic to save the category
-        console.log('Category saved:', category);
-        router.push('/settings/category-list'); // Navigate to category list screen after saving
+    const onChangeInputHandle = (field: string, value: string) => {
+        dispatch(setCategory({ ...category, [field]: value }));
     };
 
     return (
         <View className="flex-1 bg-darkBg px-4 pt-6">
+            <IconPickerModal
+                isVisible={iconModal.isOpen}
+                onClose={() => iconModal.close()}
+                onSelectIcon={(icon) => {
+                    onChangeInputHandle('icon', icon);
+                    iconModal.close();
+                }}
+                selectedIcon={category.icon}
+            />
             <Text className="text-white text-2xl font-bold mb-6">
                 Add Category
             </Text>
-
-            <TextInput
-                className="bg-gray-800 text-white px-4 py-3 rounded-md mb-6"
+            <PrimaryInput
+                onChangeText={(text) => onChangeInputHandle('name', text)}
                 placeholder="Category Name"
-                placeholderTextColor="#A0AEC0"
                 value={category.name}
-                onChangeText={(text) =>
-                    setCategory({ ...category, name: text })
-                }
+                label="Category Name"
+                placeholderTextColor="#A0AEC0"
             />
 
-            <TouchableOpacity
-                className="bg-gray-800 px-4 py-3 rounded-md mb-6"
-                onPress={() => setModalVisible(true)} // Open Modal
-            >
-                <Text className="text-white">
-                    {selectedIcon || 'Select Icon'}
-                </Text>
-            </TouchableOpacity>
+            <SelectionIconInput
+                label="Select Icon"
+                onPress={() => iconModal.open()}
+                placeholder="Select Icon"
+                selectedItem={category}
+                showName={false}
+            />
 
             <TouchableOpacity
                 onPress={handleSaveCategory}
@@ -70,49 +79,6 @@ const AddCategoryScreen = () => {
                     Save Category
                 </Text>
             </TouchableOpacity>
-
-            <Modal
-                transparent
-                visible={isModalVisible}
-                animationType="fade"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View className="flex-1 justify-center items-center bg-black/50">
-                    <View className="bg-gray-900 rounded-lg p-4 w-4/5 max-h-[300px]">
-                        <Text className="text-white text-lg font-bold mb-4 text-center">
-                            Select Icon
-                        </Text>
-                        <FlatList
-                            data={icons}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    onPress={() => handleIconSelect(item.name)}
-                                    className="p-3 items-center"
-                                >
-                                    <Ionicons
-                                        name={item.name as any}
-                                        size={32}
-                                        color={
-                                            selectedIcon === item.name
-                                                ? '#14b8a6'
-                                                : '#9CA3AF'
-                                        }
-                                    />
-                                </TouchableOpacity>
-                            )}
-                        />
-                        <TouchableOpacity
-                            onPress={() => setModalVisible(false)}
-                            className="bg-teal-500 rounded-md py-2 mt-4"
-                        >
-                            <Text className="text-center text-white font-bold">
-                                Close
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 };
