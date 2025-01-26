@@ -9,7 +9,8 @@ export const expenseInitialState = {
             icon: '',
         },
         amount: 0,
-        date: '',
+        date: new Date().toISOString(),
+        created_at: '',
         description: '',
         account: {
             id: 0,
@@ -31,6 +32,7 @@ export const expenseInitialState = {
         },
         amount: 0,
         date: '',
+        created_at: '',
         description: '',
         account: {
             id: 0,

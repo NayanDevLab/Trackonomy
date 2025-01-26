@@ -6,7 +6,7 @@ export const accountApi = apiSlice.injectEndpoints({
         getAccounts: builder.query<AccountsResponse, void>({
             query: () => ({
                 url: '/accounts',
-                meta: { skipSuccessToast: false },
+                meta: { skipSuccessToast: true },
             }),
             providesTags: ['Account'],
         }),

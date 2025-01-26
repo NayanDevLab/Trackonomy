@@ -27,7 +27,7 @@ export const expenseApi = apiSlice.injectEndpoints({
                 return {
                     url,
                     meta: {
-                        skipSuccessToast: false,
+                        skipSuccessToast: true,
                     },
                 };
             },

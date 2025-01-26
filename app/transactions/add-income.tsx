@@ -1,169 +1,182 @@
-import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    FlatList,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import PrimaryInput from '@/src/components/common/PrimaryInput';
+import DateTimePickerModal from '@/src/components/common/modals/DateTimePickerModal';
+import CategorySelectionModal from '@/src/components/common/modals/CategorySelectionModal';
+import { CategoryModelResponse } from '@/src/redux/category/categoryType';
+import { AccountModelResponse } from '@/src/redux/account/accountType';
+import { useAppDispatch, useTypedSelector } from '@/src/hooks/useTypedSelector';
+import { resetExpense, setExpense } from '@/src/redux/expense/expenseSlice';
 import { useRouter } from 'expo-router';
+import { useAddExpenseMutation } from '@/src/redux/expense/expenseApi';
+import { useModal } from '@/src/hooks/useModalState';
+import SelectionIconInput from '@/src/components/common/SelectionIconInput';
+import PrimaryButton from '@/src/components/common/PrimaryButton';
+import TransactionTypeSelectionModal from '@/src/components/common/modals/TransactionTypeSelectionModal';
+import { formatDate, toISOString } from '@/src/utils/dateUtils';
 
 export default function AddIncomeScreen() {
+    const dispatch = useAppDispatch();
     const router = useRouter();
-    const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState('');
-    const [date, setDate] = useState('23 Jul, 2024'); // Default date
-    const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+    const { expense } = useTypedSelector((state) => state.expense);
 
-    const accounts = [
-        { id: '1', name: 'Cash', icon: 'cash-outline' },
-        { id: '2', name: 'SBI Card', icon: 'card-outline' },
-        { id: '3', name: 'HDFC Card', icon: 'card-outline' },
-    ];
+    const categoryModal = useModal();
+    const accountModal = useModal();
+    const datePickerModal = useModal();
+    const transactionTypeSelectionModal = useModal();
 
-    const handleAddTransaction = () => {
-        if (!amount || !category || !selectedAccount) {
+    const [addExpense, { isLoading, isSuccess, error }] =
+        useAddExpenseMutation();
+
+    const onChangeInputFields = (
+        field: string,
+        value:
+            | string
+            | number
+            | Date
+            | AccountModelResponse
+            | CategoryModelResponse
+            | Date,
+    ) => {
+        dispatch(setExpense({ ...expense, [field]: value }));
+    };
+
+    const fetchExpensePayload = () => {
+        return {
+            title: expense.title,
+            description: expense.description,
+            amount: expense.amount,
+            category_id: expense.category.id,
+            date: expense.date,
+            account_id: expense.account.id,
+            transaction_type: 'income',
+        };
+    };
+
+    const handleAddTransaction = async () => {
+        if (!expense.amount || !expense.category) {
             alert('Please fill all the fields.');
             return;
         }
 
-        // API Call or Further Logic
-        console.log({
-            amount,
-            category,
-            date,
-            account: selectedAccount,
-        });
-        router.back(); // Navigate back after adding
+        try {
+            const payload = fetchExpensePayload();
+            const response = await addExpense(payload).unwrap();
+            if (isSuccess) {
+                router.push('/home');
+                dispatch(resetExpense());
+            }
+        } catch (error) {
+            if (error) {
+                Alert.alert(
+                    'Error',
+                    'An error occurred while adding the transaction.',
+                );
+            }
+        }
     };
 
     return (
         <View className="flex-1 bg-darkBg px-4">
-            {/* Header */}
-            <View className="bg-teal-400 h-16 flex-row items-center px-4">
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
-                <Text className="text-white font-bold text-lg ml-4">
-                    Add Expense
-                </Text>
-            </View>
+            <CategorySelectionModal
+                isVisible={categoryModal.isOpen}
+                onClose={() => categoryModal.close()}
+                onSelectCategory={(category) => {
+                    onChangeInputFields('category', category);
+                    categoryModal.close();
+                }}
+            />
 
-            {/* Content */}
+            <TransactionTypeSelectionModal
+                isVisible={transactionTypeSelectionModal.isOpen}
+                onClose={() => transactionTypeSelectionModal.close()}
+                onSelectType={(transactionType) => {
+                    onChangeInputFields('transaction_type', transactionType);
+                    transactionTypeSelectionModal.close();
+                }}
+            />
+
+            <DateTimePickerModal
+                isVisible={datePickerModal.isOpen}
+                mode="date"
+                value={expense.date ? new Date(expense.date) : new Date()}
+                onConfirm={(date) => {
+                    const isoStringDate = toISOString(date);
+                    onChangeInputFields('date', isoStringDate);
+
+                    datePickerModal.close();
+                }}
+                onCancel={() => datePickerModal.close()}
+            />
+
             <View className="flex-1 mt-6">
-                {/* Transaction Amount */}
-                <View className="mb-4">
-                    <Text className="text-gray-300 mb-2">
-                        Transaction amount
-                    </Text>
-                    <TextInput
-                        className="bg-gray-800 text-white rounded-lg px-4 py-3"
-                        placeholder="Enter Amount"
-                        placeholderTextColor="#A0AEC0"
-                        keyboardType="numeric"
-                        value={amount}
-                        onChangeText={setAmount}
-                    />
-                </View>
+                <PrimaryInput
+                    onChangeText={(value) =>
+                        onChangeInputFields('title', value)
+                    }
+                    placeholder="Enter Title"
+                    value={expense.title}
+                    label="Title"
+                    placeholderTextColor="#fff"
+                />
 
-                {/* Transaction Category */}
+                <PrimaryInput
+                    onChangeText={(value) =>
+                        onChangeInputFields('amount', parseFloat(value))
+                    }
+                    placeholder="Enter Amount"
+                    value={expense.amount.toString()}
+                    keyboardType="numeric"
+                    label="Transaction amount"
+                    placeholderTextColor="#fff"
+                />
+
+                <PrimaryInput
+                    onChangeText={(value) =>
+                        onChangeInputFields('description', value)
+                    }
+                    placeholder="Enter Description"
+                    value={expense.description}
+                    label="Description"
+                    multiline
+                    placeholderTextColor="#fff"
+                />
+
+                <SelectionIconInput
+                    label="Transaction Category"
+                    selectedItem={expense.category}
+                    onPress={() => categoryModal.open()}
+                    placeholder="Choose a category"
+                />
+
+                <SelectionIconInput
+                    label="Transaction Account"
+                    selectedItem={expense.account}
+                    onPress={() => {
+                        accountModal.open();
+                    }}
+                    placeholder="Choose a account"
+                />
+
                 <View className="mb-4">
-                    <Text className="text-gray-300 mb-2">
-                        Transaction category
+                    <Text className="text-gray-400 text-sm mb-2">
+                        Transaction Date
                     </Text>
                     <TouchableOpacity
-                        className="bg-gray-800 flex-row justify-between items-center rounded-lg px-4 py-3"
-                        onPress={() => alert('Select category action')}
+                        onPress={() => datePickerModal.open()}
+                        className="bg-gray-800 rounded-md px-4 py-3"
                     >
                         <Text className="text-white">
-                            {category || 'Select Category'}
+                            {expense.date
+                                ? formatDate(expense.date)
+                                : 'Select Date'}
                         </Text>
-                        <Ionicons
-                            name="chevron-down-outline"
-                            size={20}
-                            color="white"
-                        />
                     </TouchableOpacity>
-                </View>
-
-                {/* Transaction Date */}
-                <View className="mb-4">
-                    <Text className="text-gray-300 mb-2">Transaction date</Text>
-                    <TouchableOpacity
-                        className="bg-gray-800 flex-row justify-between items-center rounded-lg px-4 py-3"
-                        onPress={() => alert('Date picker action')}
-                    >
-                        <Text className="text-white">{date}</Text>
-                        <Ionicons
-                            name="calendar-outline"
-                            size={20}
-                            color="white"
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                {/* Transaction Account */}
-                <View className="mb-4">
-                    <View className="flex-row justify-between mb-2">
-                        <Text className="text-gray-300">
-                            Transaction account
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => alert('Add account action')}
-                        >
-                            <Text className="text-teal-400 font-bold">
-                                Add account
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    <FlatList
-                        horizontal
-                        data={accounts}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                className={`flex-1 items-center justify-center mx-2 p-4 rounded-lg ${
-                                    selectedAccount === item.id
-                                        ? 'bg-teal-400'
-                                        : 'bg-gray-800'
-                                }`}
-                                onPress={() => setSelectedAccount(item.id)}
-                            >
-                                <Ionicons
-                                    name={item.icon as any}
-                                    size={24}
-                                    color={
-                                        selectedAccount === item.id
-                                            ? 'white'
-                                            : 'gray'
-                                    }
-                                />
-                                <Text
-                                    className={`mt-2 font-bold ${
-                                        selectedAccount === item.id
-                                            ? 'text-white'
-                                            : 'text-gray-400'
-                                    }`}
-                                >
-                                    {item.name}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    />
                 </View>
             </View>
 
-            {/* Add Button */}
             <View className="mt-4">
-                <TouchableOpacity
-                    className="bg-teal-400 py-4 rounded-lg"
-                    onPress={handleAddTransaction}
-                >
-                    <Text className="text-center text-white font-bold">
-                        Add
-                    </Text>
-                </TouchableOpacity>
+                <PrimaryButton onPress={handleAddTransaction} title="Add" />
             </View>
         </View>
     );

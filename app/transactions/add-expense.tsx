@@ -8,13 +8,13 @@ import AccountSelectionModal from '@/src/components/common/modals/AccountSelecti
 import { CategoryModelResponse } from '@/src/redux/category/categoryType';
 import { AccountModelResponse } from '@/src/redux/account/accountType';
 import { useAppDispatch, useTypedSelector } from '@/src/hooks/useTypedSelector';
-import { setExpense } from '@/src/redux/expense/expenseSlice';
+import { resetExpense, setExpense } from '@/src/redux/expense/expenseSlice';
 import { useRouter } from 'expo-router';
 import { useAddExpenseMutation } from '@/src/redux/expense/expenseApi';
 import { useModal } from '@/src/hooks/useModalState';
 import SelectionIconInput from '@/src/components/common/SelectionIconInput';
 import PrimaryButton from '@/src/components/common/PrimaryButton';
-import TransactionTypeSelectionModal from '@/src/components/common/modals/TransactionTypeSelectionModal';
+import { formatDate, toISOString } from '@/src/utils/dateUtils';
 
 export default function AddExpenseScreen() {
     const dispatch = useAppDispatch();
@@ -24,7 +24,6 @@ export default function AddExpenseScreen() {
     const categoryModal = useModal();
     const accountModal = useModal();
     const datePickerModal = useModal();
-    const transactionTypeSelectionModal = useModal();
 
     const [addExpense, { isLoading, isSuccess, error }] =
         useAddExpenseMutation();
@@ -39,13 +38,6 @@ export default function AddExpenseScreen() {
             | CategoryModelResponse
             | Date,
     ) => {
-        if (field === 'amount') {
-            value = Number(value);
-        }
-        if (field === 'date' && value instanceof Date) {
-            value = value.toISOString();
-        }
-        dispatch(setExpense({ ...expense, [field]: value }));
         dispatch(setExpense({ ...expense, [field]: value }));
     };
 
@@ -57,7 +49,7 @@ export default function AddExpenseScreen() {
             category_id: expense.category.id,
             date: expense.date,
             account_id: expense.account.id,
-            transaction_type: expense.transaction_type,
+            transaction_type: 'expense',
         };
     };
 
@@ -72,8 +64,8 @@ export default function AddExpenseScreen() {
             const response = await addExpense(payload).unwrap();
             console.log('response', response);
             if (isSuccess) {
-                router.back();
-                Alert.alert('Success', 'Transaction added successfully!');
+                router.push('/home');
+                dispatch(resetExpense());
             }
         } catch (error) {
             if (error) {
@@ -106,21 +98,14 @@ export default function AddExpenseScreen() {
                 }}
             />
 
-            <TransactionTypeSelectionModal
-                isVisible={transactionTypeSelectionModal.isOpen}
-                onClose={() => transactionTypeSelectionModal.close()}
-                onSelectType={(transactionType) => {
-                    onChangeInputFields('transaction_type', transactionType);
-                    transactionTypeSelectionModal.close();
-                }}
-            />
-
             <DateTimePickerModal
                 isVisible={datePickerModal.isOpen}
                 mode="date"
                 value={expense.date ? new Date(expense.date) : new Date()}
                 onConfirm={(date) => {
-                    onChangeInputFields('date', date);
+                    const isoStringDate = toISOString(date);
+                    onChangeInputFields('date', isoStringDate);
+
                     datePickerModal.close();
                 }}
                 onCancel={() => datePickerModal.close()}
@@ -139,7 +124,7 @@ export default function AddExpenseScreen() {
 
                 <PrimaryInput
                     onChangeText={(value) =>
-                        onChangeInputFields('amount', value)
+                        onChangeInputFields('amount', parseFloat(value))
                     }
                     placeholder="Enter Amount"
                     value={expense.amount.toString()}
@@ -185,44 +170,8 @@ export default function AddExpenseScreen() {
                     >
                         <Text className="text-white">
                             {expense.date
-                                ? new Date(expense.date).toDateString()
+                                ? formatDate(expense.date)
                                 : 'Select Date'}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View className="mb-4">
-                    <Text className="text-gray-400 text-sm mb-2">
-                        Transaction Type
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => transactionTypeSelectionModal.open()}
-                        className="bg-gray-800 rounded-md px-4 py-3 flex-row items-center"
-                    >
-                        {expense.transaction_type === 'income' ? (
-                            <Ionicons
-                                name="arrow-up-circle-outline"
-                                size={24}
-                                color="#38B2AC"
-                            />
-                        ) : expense.transaction_type === 'expense' ? (
-                            <Ionicons
-                                name="arrow-down-circle-outline"
-                                size={24}
-                                color="#E53E3E"
-                            />
-                        ) : (
-                            <Ionicons
-                                name="cash-outline"
-                                size={24}
-                                color="#A0AEC0"
-                            />
-                        )}
-
-                        <Text className="text-white ml-3">
-                            {expense.transaction_type
-                                ? expense.transaction_type
-                                : 'Select Type of Transaction'}
                         </Text>
                     </TouchableOpacity>
                 </View>
