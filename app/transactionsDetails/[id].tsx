@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTypedSelector } from '@/src/hooks/useTypedSelector';
 import { useGetExpenseByIdQuery } from '@/src/redux/expense/expenseApi';
 import TransactionDetailItem from '@/src/components/screens/Home/TransactionDetailItem';
+import { formatDate } from '@/src/utils/dateUtils';
 
 export default function TransactionDetail() {
     const router = useRouter();
@@ -63,7 +64,9 @@ export default function TransactionDetail() {
                         <Text className="text-white text-lg font-semibold">
                             {expenseDetails?.category.name}
                         </Text>
-                        <Text className="text-gray-400 text-sm">Expense</Text>
+                        <Text className="text-gray-400 text-sm">
+                            {expenseDetails.transaction_type}
+                        </Text>
                     </View>
                 </View>
                 {/* Edit and Trash Buttons */}
@@ -111,7 +114,10 @@ export default function TransactionDetail() {
                             : 'Expense'
                     }
                 />
-                <TransactionDetailItem title="Transaction Date" value={'N/A'} />
+                <TransactionDetailItem
+                    title="Transaction Date"
+                    value={formatDate(expenseDetails.date)}
+                />
                 <TransactionDetailItem
                     title="Transaction Account"
                     value={expenseDetails?.account.name || 'N/A'}

@@ -6,7 +6,7 @@ export const categoryApi = apiSlice.injectEndpoints({
         getCategories: builder.query<CategoriesResponse, void>({
             query: () => ({
                 url: '/categories',
-                meta: { skipSuccessToast: false },
+                meta: { skipSuccessToast: true },
             }),
             providesTags: ['Category'],
         }),

@@ -10,6 +10,7 @@ export interface IExpenseState {
     date: string;
     description: string;
     account: AccountModelResponse;
+    created_at: string;
 }
 
 export interface ExpenseResponseItem {

@@ -16,6 +16,7 @@ import SelectionIconInput from '@/src/components/common/SelectionIconInput';
 import { useModal } from '@/src/hooks/useModalState';
 import TransactionTypeSelectionModal from '@/src/components/common/modals/TransactionTypeSelectionModal';
 import { useUpdateExpenseByIdMutation } from '@/src/redux/expense/expenseApi';
+import { formatDate, toISOString } from '@/src/utils/dateUtils';
 
 export default function EditTransaction() {
     const router = useRouter();
@@ -58,12 +59,8 @@ export default function EditTransaction() {
                 id: editableExpense.id,
                 expense: payload,
             }).unwrap();
-
-            console.log('Update successful', response);
-
             if (isSuccess) {
-                // Navigate back or show success message
-                router.back();
+                router.push('/transactions');
                 Alert.alert('Success', 'Transaction updated successfully!');
             }
         } catch (error) {
@@ -130,7 +127,8 @@ export default function EditTransaction() {
                         : new Date()
                 }
                 onConfirm={(date) => {
-                    onChangeInputField('date', date);
+                    const isoStringDate = toISOString(date);
+                    onChangeInputField('date', isoStringDate);
                     datePickerModal.close();
                 }}
                 onCancel={() => datePickerModal.close()}
@@ -224,7 +222,7 @@ export default function EditTransaction() {
                     >
                         <Text className="text-white">
                             {editableExpense.date
-                                ? new Date(editableExpense.date).toDateString()
+                                ? formatDate(editableExpense.date)
                                 : 'Select Date'}
                         </Text>
                     </TouchableOpacity>

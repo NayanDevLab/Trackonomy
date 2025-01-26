@@ -20,7 +20,7 @@ export default function TransactionDetailItem({
                     {title}
                 </Text>
                 <View className="flex-row items-center gap-x-2 justify-items-center">
-                    <Text className="text-gray-400 text-lg">{value}</Text>
+                    <Text className="text-gray-400 text-xl">{value}</Text>
                     {icon && (
                         <Ionicons
                             name={icon as keyof typeof Ionicons.glyphMap}
