@@ -20,6 +20,7 @@ export const expenseInitialState = {
             description: '',
             account_type: '',
         },
+        file_url: '',
     },
     expenseDetails: {
         id: 0,
@@ -42,5 +43,6 @@ export const expenseInitialState = {
             description: '',
             account_type: '',
         },
+        file_url: '',
     },
 };
