@@ -11,6 +11,7 @@ export interface IExpenseState {
     description: string;
     account: AccountModelResponse;
     created_at: string;
+    file_url: string;
 }
 
 export interface ExpenseResponseItem {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import PrimaryInput from '@/src/components/common/PrimaryInput';
 import DateTimePickerModal from '@/src/components/common/modals/DateTimePickerModal';
 import CategorySelectionModal from '@/src/components/common/modals/CategorySelectionModal';
@@ -15,6 +14,10 @@ import { useModal } from '@/src/hooks/useModalState';
 import SelectionIconInput from '@/src/components/common/SelectionIconInput';
 import PrimaryButton from '@/src/components/common/PrimaryButton';
 import { formatDate, toISOString } from '@/src/utils/dateUtils';
+import PickImageButton from '@/src/components/common/PickImageButton';
+import { useUploadImageMutation } from '@/src/redux/upload/uploadApi';
+import { createImageFormData } from '@/src/utils/imageUtils';
+import { UploadResponse } from '@/src/redux/upload/uploadType';
 
 export default function AddExpenseScreen() {
     const dispatch = useAppDispatch();
@@ -24,9 +27,11 @@ export default function AddExpenseScreen() {
     const categoryModal = useModal();
     const accountModal = useModal();
     const datePickerModal = useModal();
+    const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
     const [addExpense, { isLoading, isSuccess, error }] =
         useAddExpenseMutation();
+    const [uploadImage] = useUploadImageMutation();
 
     const onChangeInputFields = (
         field: string,
@@ -50,31 +55,60 @@ export default function AddExpenseScreen() {
             date: expense.date,
             account_id: expense.account.id,
             transaction_type: 'expense',
+            file_url: expense.file_url,
         };
     };
 
     const handleAddTransaction = async () => {
         if (!expense.amount || !expense.category) {
-            alert('Please fill all the fields.');
+            Alert.alert('Incomplete fields', 'Please fill all the fields.');
             return;
         }
 
+        let finalFileUrl = expense.file_url;
+        if (!finalFileUrl && localImageUri) {
+            const uploadedFileUrl = await handleImageUpload(localImageUri);
+            if (uploadedFileUrl) {
+                finalFileUrl = uploadedFileUrl;
+            }
+            onChangeInputFields('file_url', finalFileUrl);
+        }
+
         try {
-            const payload = fetchExpensePayload();
+            const payload = {
+                ...fetchExpensePayload(),
+                file_url: finalFileUrl,
+            };
             const response = await addExpense(payload).unwrap();
-            console.log('response', response);
+            console.log('Expense added:', response);
             if (isSuccess) {
                 router.push('/home');
                 dispatch(resetExpense());
             }
         } catch (error) {
-            if (error) {
-                console.log('error', error);
-                Alert.alert(
-                    'Error',
-                    'An error occurred while adding the transaction.',
-                );
-            }
+            console.error('Error adding expense:', error);
+            Alert.alert(
+                'Error',
+                'An error occurred while adding the transaction.',
+            );
+        }
+    };
+
+    const handleImageUpload = async (uri: string): Promise<string | null> => {
+        const formData = createImageFormData(uri);
+        try {
+            const response = (await uploadImage(
+                formData,
+            ).unwrap()) as unknown as UploadResponse;
+            console.log('Image uploaded:', response);
+            return response.data.url;
+        } catch (uploadError) {
+            console.error('Image upload error:', uploadError);
+            Alert.alert(
+                'Upload Error',
+                'Failed to upload image. Creating expense without an image.',
+            );
+            return null;
         }
     };
 
@@ -176,6 +210,11 @@ export default function AddExpenseScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <PickImageButton
+                onImagePicked={(uri) => setLocalImageUri(uri)}
+                imageUri={localImageUri}
+            />
 
             <View className="mt-4">
                 <PrimaryButton onPress={handleAddTransaction} title="Add" />
